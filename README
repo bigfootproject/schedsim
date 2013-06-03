@@ -1,0 +1,44 @@
+This is our simulator for evaluating the impact of errors in
+estimating the size when performing size-based scheduling in big-data
+workloads. Details in our technical report, available at XXX.
+
+Needed software:
+ - wget (to get the datasets)
+ - Python 3 (should also work -- untested -- with Py2.7)
+ - Python libraries: numpy
+
+=== GET THE WORKLOADS ===
+
+$./get_datasets
+(will get the workloads from the SWIM git repository)
+
+=== RUN THE EXPERIMENT ===
+
+$./experiment.py filename.tsv sigma iterations [d-over-n] [load]
+
+ - filename.tsv: the .tsv file with the trace to use
+ - sigma: the sigma parameter for the log-normal error function
+ - iterations: number of iterations for each run of the experiment
+ - d-over-n: the d/n parameter (details in our technical report)
+   to generate the workload starting from the .tsv file. Represents
+   the ratio between disk and network bandwidth in the simulated
+   cluster. Default value: 4.
+ - load: the average load in the simulated cluster (details in
+   our technical report). Default value: 0.9.
+
+This will compute the sojourn times for each of the jobs in
+filename.tsv using FIFO, PS, SRPT and two variants of FSP that cope
+with errors (described again in our technical report). When performing
+experiments, it will print the mean sojourn times for each instance of
+the experiments. Since FIFO and PS do not suffer from estimation
+errors and they only depend on the trace, they will be computed only
+once rather than repeated depending on the number of iterations.
+
+Results will be output in a binary file (Python's shelve format) named
+'results_filename[.tsv stripped]_sigma_d-over-n_load.s'. If such a
+file already exists, we simply add the results of more experiment runs
+to it.
+
+=== PLOT THE RESULTS ===
+
+XXX

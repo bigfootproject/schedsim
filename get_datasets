@@ -1,0 +1,6 @@
+#!/bin/sh
+
+wget -O FB09-0.tsv https://raw.github.com/SWIMProjectUCB/SWIM/master/workloadSuite/FB-2009_samples_24_times_1hr_0.tsv
+wget -O FB09-1.tsv https://raw.github.com/SWIMProjectUCB/SWIM/master/workloadSuite/FB-2009_samples_24_times_1hr_1.tsv
+wget -O FB09-small.tsv https://raw.github.com/SWIMProjectUCB/SWIM/master/workloadSuite/FB-2009_samples_24_times_1hr_0_first50jobs.tsv
+wget -O FB10.tsv https://raw.github.com/SWIMProjectUCB/SWIM/master/workloadSuite/FB-2010_samples_24_times_1hr_0.tsv
