@@ -2,8 +2,8 @@
 
 from __future__ import print_function
 
-import sys
 import shelve
+import sys
 
 from random import lognormvariate
 
@@ -14,18 +14,18 @@ import simulator
 import schedulers
 
 argv = sys.argv
-
 swim_file, sigma, iterations = argv[1:4]
 sigma = float(sigma)
 iterations = int(iterations)
 
+
 if len(argv) >= 5:
-    d_over_n = float(d_over_n)
+    d_over_n = float(argv[4])
 else:
     d_over_n = 4
 
 if len(argv) >= 6:
-    load = float(load)
+    load = float(argv[5])
 else:
     load = 0.9
 
@@ -65,6 +65,9 @@ for name, scheduler, errfunc, iterations in instances:
             continue
         else:
             iterations = 1
+    elif sigma == 0:
+        # No point to compute results for schedulers which don't have error
+        continue
     
     scheduler_results = []
     
