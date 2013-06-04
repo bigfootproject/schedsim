@@ -5,7 +5,7 @@ workloads. Details in our technical report, available at XXX.
 Needed software:
  - wget (to get the datasets)
  - Python 3 (should also work -- untested -- with Py2.7)
- - Python libraries: numpy
+ - Python libraries: numpy, matplotlib (for plots)
 
 === GET THE WORKLOADS ===
 
@@ -41,4 +41,9 @@ to it.
 
 === PLOT THE RESULTS ===
 
-XXX
+./plot_sojourn_vs_error.py dataset d-over-n load [paper]
+
+Produces boxplots for sojourn time vs. errors.
+
+If the "paper" parameter is specified, .eps files will be rendered
+with Latex and output as sojourn-vs-error_dataset_d-over-n_load.eps.
