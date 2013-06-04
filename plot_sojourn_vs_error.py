@@ -11,6 +11,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 dataset, d_over_n, load = sys.argv[1:4]
+d_over_n = float(d_over_n)
+load = float(load)
 
 for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
 
@@ -54,7 +56,7 @@ for scheduler, err_data in zip(with_error, with_error_data):
     plt.legend(loc=2)
 
     if for_paper:
-        fmt = 'sojourn-vs-error_{}_{}_{}_{}.eps'
+        fmt = 'sojourn-vs-error_{}_{}_{}_{}.pdf'
         fname = fmt.format(scheduler, dataset, d_over_n, load)
         plt.savefig(fname)
 

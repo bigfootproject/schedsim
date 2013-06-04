@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export LC_NUMERIC=C # avoids problems with seq
+
+for workload in FB09-0 FB09-1 FB10; do
+    echo ==============================================================
+    echo                      $workload
+    echo ==============================================================
+    echo
+    echo --------------------------------------------------------------
+    echo                      sojourn vs. error
+    echo --------------------------------------------------------------
+    echo
+    ./plot_sojourn_vs_error.py $workload 4 0.9 paper
+    echo
+    echo --------------------------------------------------------------
+    echo                      sojourn vs. load
+    echo --------------------------------------------------------------
+    echo
+    ./plot_sojourn_vs_load.py $workload 0.25 4 paper
+    echo
+    echo --------------------------------------------------------------
+    echo                       sojourn vs. d-over-n
+    echo --------------------------------------------------------------
+    echo
+    ./plot_sojourn_vs_dn.py $workload 0.25 0.9 paper
+    echo
+done

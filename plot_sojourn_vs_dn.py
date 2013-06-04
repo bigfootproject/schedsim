@@ -32,14 +32,14 @@ with_error = ['FIFO', 'PS', 'FSP + FIFO', 'FSP + PS', 'SRPT']
 no_error_data = [[] for _ in no_error]
 with_error_data = [[] for _ in with_error]
 
-for load, fname in shelve_files:
+for dn, fname in shelve_files:
     res = shelve.open(fname, 'r')
     for i, scheduler in enumerate(no_error):
         no_error_data[i].append(np.array(res[scheduler]).mean())
     for i, scheduler in enumerate(with_error):
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
-figures = [("No error", 0, no_error, no_error_data),
+figures = [("No error", float(0), no_error, no_error_data),
            (r"$\sigma={}$".format(sigma), sigma, with_error, with_error_data)]
 
 for title, sigma, schedulers, data in figures:
@@ -54,7 +54,7 @@ for title, sigma, schedulers, data in figures:
     plt.legend(loc=2)
 
     if for_paper:
-        fmt = 'sojourn-vs-dn_{}_{}_{}.eps'
+        fmt = 'sojourn-vs-dn_{}_{}_{}.pdf'
         fname = fmt.format(dataset, sigma, load)
         plt.savefig(fname)
 

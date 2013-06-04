@@ -39,7 +39,7 @@ for load, fname in shelve_files:
     for i, scheduler in enumerate(with_error):
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
-figures = [("No error", 0, no_error, no_error_data),
+figures = [("No error", float(0), no_error, no_error_data),
            (r"$\sigma={}$".format(sigma), sigma, with_error, with_error_data)]
 
 for title, sigma_, schedulers, data in figures:
@@ -54,7 +54,7 @@ for title, sigma_, schedulers, data in figures:
     plt.legend(loc=2)
 
     if for_paper:
-        fmt = 'sojourn-vs-load_{}_{}_{}.eps'
+        fmt = 'sojourn-vs-load_{}_{}_{}.pdf'
         fname = fmt.format(dataset, sigma_, d_over_n)
         plt.savefig(fname)
 
