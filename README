@@ -18,7 +18,9 @@ $./experiment.py filename.tsv sigma iterations [d-over-n] [load]
 
  - filename.tsv: the .tsv file with the trace to use
  - sigma: the sigma parameter for the log-normal error function
- - iterations: number of iterations for each run of the experiment
+ - iterations: number of iterations for each run of the experiment.
+   If that number of iterations is already in the results file,
+   nothing will be done.
  - d-over-n: the d/n parameter (details in our technical report)
    to generate the workload starting from the .tsv file. Represents
    the ratio between disk and network bandwidth in the simulated

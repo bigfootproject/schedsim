@@ -24,9 +24,6 @@ shelve_files = sorted((float(fname.split('_')[2]), fname)
                       for fname in glob(glob_str))
 sigmas = [sigma for sigma, _ in shelve_files]
 
-def avg_sojourn(results, scheduler):
-    return np.array(results[scheduler]).mean()
-
 no_error = ['FIFO', 'PS', 'FSP (no error)', 'SRPT (no error)']
 with_error = ['FSP + FIFO', 'FSP + PS', 'SRPT']
 
@@ -44,7 +41,9 @@ for scheduler, err_data in zip(with_error, with_error_data):
     plt.figure(scheduler)
     plt.xlabel("$\sigma$")
     plt.ylabel("mean sojourn time (s)")
-    xs = range(1, len(sigmas) + 1)
+    xs = list(range(1, len(sigmas) + 1))
+    xs[0] -= 1
+    xs[-1] += 1
     line_styles = cycle("- -- -. :".split())
     for noerr_sched, noerr_data in zip(no_error, no_error_data):
         plt.semilogy(xs, noerr_data, next(line_styles), label=noerr_sched)
@@ -61,35 +60,3 @@ for scheduler, err_data in zip(with_error, with_error_data):
 
 if not for_paper:
     plt.show()
-
-exit()
-
-FIFO_sojourn = avg_sojourn('FIFO', 0)
-PS_sojourn = avg_sojourn('PS', 0)
-SRPT_sojourn = avg_sojourn('SRPT', 0)
-
-print("FIFO", FIFO_sojourn, "; PS", PS_sojourn, "; SRPT", SRPT_sojourn)
-
-for scheduler in ['SRPT', 'FSP']:
-    plt.figure(scheduler)
-    plt.xlabel("$\sigma$")
-    plt.ylabel('mean sojourn time (s)')
-    sigmas = sorted(results[scheduler].keys())[:-1]
-    # plt.semilogy([-1, len(sigmas) + 1], [FIFO_sojourn, FIFO_sojourn],
-    #              '-.', label='FIFO')
-    plt.semilogy([-1, len(sigmas) + 1], [PS_sojourn, PS_sojourn],
-                 ':', label='PS')
-    plt.semilogy([-1, len(sigmas) + 1], [SRPT_sojourn, SRPT_sojourn],
-                 label='SRPT (no error)')
-    sojourns = [avg_sojourns(scheduler, sigma) for sigma in sigmas]
-    plt.boxplot(sojourns)
-    plt.xticks(range(1, len(sigmas) + 1), sigmas)
-#    plt.ylim(SRPT_sojourn * 0.85, FIFO_sojourn / 0.85)
-    plt.ylim(8, 200)
-    plt.legend(loc=2)
-    plt.savefig('{}.eps'.format(scheduler))
-    
-plt.show()
-
-
-

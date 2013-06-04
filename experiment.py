@@ -69,9 +69,9 @@ for name, scheduler, errfunc, iterations in instances:
         # No point to compute results for schedulers which don't have error
         continue
     
-    scheduler_results = []
+    scheduler_results = final_results.get(name, [])
     
-    for i in range(iterations):
+    for i in range(iterations - len(scheduler_results)):
         results = list(simulator.simulator(jobs, scheduler, errfunc))
         sojourns = zeros(n_jobs)
         for compl, jobid in results:
@@ -81,9 +81,7 @@ for name, scheduler, errfunc, iterations in instances:
         sys.stdout.flush()
     print()
     
-    res = final_results.get(name, [])
-    res.extend(scheduler_results)
-    final_results[name] = res
+    final_results[name] = scheduler_results
     print()
     
 final_results.close()
