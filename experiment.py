@@ -22,7 +22,7 @@ iterations = int(iterations)
 if len(argv) >= 5:
     d_over_n = float(argv[4])
 else:
-    d_over_n = 4
+    d_over_n = 4.0
 
 if len(argv) >= 6:
     load = float(argv[5])

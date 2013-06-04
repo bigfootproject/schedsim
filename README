@@ -43,7 +43,7 @@ to it.
 
 === PLOT THE RESULTS ===
 
-./plot_sojourn_vs_error.py dataset d-over-n load [paper]
+$./plot_sojourn_vs_error.py dataset d-over-n load [paper]
 
 Produces boxplots for sojourn time vs. errors.
 
