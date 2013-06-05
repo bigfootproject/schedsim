@@ -17,12 +17,12 @@ for workload in FB09-0 FB09-1 FB10; do
     echo                      sojourn vs. load
     echo --------------------------------------------------------------
     echo
-    ./plot_sojourn_vs_load.py $workload 0.25 4 paper
+    ./plot_sojourn_vs_load.py $workload 0.5 4 paper
     echo
     echo --------------------------------------------------------------
     echo                       sojourn vs. d-over-n
     echo --------------------------------------------------------------
     echo
-    ./plot_sojourn_vs_dn.py $workload 0.25 0.9 paper
+    ./plot_sojourn_vs_dn.py $workload 0.5 0.9 paper
     echo
 done

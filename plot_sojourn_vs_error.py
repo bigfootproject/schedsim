@@ -4,11 +4,12 @@ import shelve
 import sys
 
 from glob import glob
-from itertools import cycle
 
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+
+import plot_helpers
 
 dataset, d_over_n, load = sys.argv[1:4]
 d_over_n = float(d_over_n)
@@ -17,9 +18,7 @@ load = float(load)
 for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
 
 if for_paper:
-    matplotlib.rc('font',**{'family':'serif','serif':['Palatino']})
-    matplotlib.rc('text', usetex=True)
-    matplotlib.rcParams.update({'font.size': 22})
+    plot_helpers.config_paper()
 
 glob_str = 'results_{}_[0-9.]*_{}_{}.s'.format(dataset, d_over_n, load)
 shelve_files = sorted((float(fname.split('_')[2]), fname)
@@ -46,9 +45,9 @@ for scheduler, err_data in zip(with_error, with_error_data):
     xs = list(range(1, len(sigmas) + 1))
     xs[0] -= 1
     xs[-1] += 1
-    line_styles = cycle("- -- -. :".split())
-    for noerr_sched, noerr_data in zip(no_error, no_error_data):
-        plt.semilogy(xs, noerr_data, next(line_styles), label=noerr_sched)
+    for noerr_sched, noerr_data, style in zip(no_error, no_error_data,
+                                              plot_helpers.cycle_styles()):
+        plt.semilogy(xs, noerr_data, style, label=noerr_sched)
     plt.boxplot(err_data)
     plt.xticks(range(1, len(sigmas) + 1), sigmas)
     plt.ylim(min([min(d) for d in no_error_data]) * 0.85,

@@ -7,6 +7,9 @@ Needed software:
  - Python 3 (should also work -- untested -- with Py2.7)
  - Python libraries: numpy, matplotlib (for plots)
 
+I got reported that this appears not to be sufficient with the Py2.7
+installed by default on MacOS.
+
 === GET THE WORKLOADS ===
 
 $./get_datasets

@@ -4,11 +4,12 @@ import shelve
 import sys
 
 from glob import glob
-from itertools import cycle
 
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+
+import plot_helpers
 
 dataset, sigma, load = sys.argv[1:4]
 sigma = float(sigma)
@@ -17,9 +18,7 @@ load = float(load)
 for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
 
 if for_paper:
-    matplotlib.rc('font',**{'family':'serif','serif':['Palatino']})
-    matplotlib.rc('text', usetex=True)
-    matplotlib.rcParams.update({'font.size': 22})
+    plot_helpers.config_paper()
 
 glob_str = 'results_{}_{}_[0-9.]*_{}.s'.format(dataset, sigma, load)
 shelve_files = sorted((float(fname.split('_')[3]), fname)
@@ -46,10 +45,10 @@ for title, sigma, schedulers, data in figures:
     plt.figure(title)
     plt.xlabel("$d/n$")
     plt.ylabel("mean sojourn time (s)")
-    line_styles = cycle("-x --x -.x :x".split())
 
-    for scheduler, mst in zip(schedulers, data):
-        plt.semilogy(dns, mst, next(line_styles), label=scheduler)
+    for scheduler, mst, style in zip(schedulers, data,
+                                     plot_helpers.cycle_styles('x')):
+        plt.semilogy(dns, mst, style, label=scheduler)
     plt.grid()
     plt.legend(loc=2)
 
