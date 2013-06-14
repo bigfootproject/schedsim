@@ -2,7 +2,7 @@ from itertools import cycle
 
 import matplotlib
 
-def config_paper(font_size = None):
+def config_paper(font_size = 22):
     matplotlib.rc('font',**{'family':'serif','serif':['Palatino']})
     matplotlib.rc('text', usetex=True)
     if font_size:
