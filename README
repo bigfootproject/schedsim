@@ -1,6 +1,7 @@
 This is our simulator for evaluating the impact of errors in
 estimating the size when performing size-based scheduling in big-data
-workloads. Details in our technical report, available at XXX.
+workloads. Details in our technical report, available at 
+http://arxiv.org/abs/1306.6023.
 
 Needed software:
  - wget (to get the datasets)
@@ -19,13 +20,14 @@ $./get_datasets
 
 usage: experiment.py -h
 
-This will compute the sojourn times for each of the jobs in
-filename.tsv using FIFO, PS, SRPT and two variants of FSP that cope
-with errors (described again in our technical report). When performing
-experiments, it will print the mean sojourn times for each instance of
-the experiments. Since FIFO and PS do not suffer from estimation
-errors and they only depend on the trace, they will be computed only
-once rather than repeated depending on the number of iterations.
+This will compute the sojourn times for each of the jobs in the
+specified TSV file using FIFO, PS, SRPT and two variants of FSP that
+cope with errors (described again in our technical report). When
+performing experiments, it will print the mean sojourn times for each
+instance of the experiments. Since FIFO and PS do not suffer from
+estimation errors and they only depend on the trace, they will be
+computed only once rather than repeated depending on the number of
+iterations.
 
 Results will be output in a binary file (Python's shelve format) named
 'results_filename[.tsv stripped]_sigma_d-over-n_load.s'. If such a
@@ -38,11 +40,7 @@ usage: plot_sojourn_vs_error.py -h
 usage: plot_sojourn_vs_load.py -h
 usage: plot_sojourn_vs_dn.py -h
 
-Exactly as above, but varying d-over-n and keeping load fixed. Output
-graphs for the "paper" option will be
-sojourn-vs-dn_dataset_sigma_load.pdf.
-
-=== REPEAT THE EXPERIMENTS IN THE TECHNICAL REPORTS ===
+=== REPEAT THE EXPERIMENTS AND PERFORM THE PLOTS IN THE TECHNICAL REPORT ===
 
 $./do_experiments
 $./do_plots
