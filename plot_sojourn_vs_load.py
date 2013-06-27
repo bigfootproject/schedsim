@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import shelve
-import sys
 
 from glob import glob
 
@@ -11,16 +10,26 @@ import matplotlib.pyplot as plt
 
 import plot_helpers
 
-dataset, sigma, d_over_n = sys.argv[1:4]
-sigma = float(sigma)
-d_over_n = float(d_over_n)
+import argparse
 
-for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
+parser = argparse.ArgumentParser(description="produce boxplots for sojourn "
+                                 "time vs. load")
+parser.add_argument('dataset', help="name of the .tsv file used.")
+parser.add_argument('sigma', type=float, help="sigma parameter for the "
+                    "log-normal error function")
+parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
+                    default=4, help="ratio between disk and network "
+                    "bandwidth in the simulated cluster.")
+parser.add_argument('--paper', dest='for_paper', action='store_const',
+                    const=True, default=False, help="render plots with "
+                    "LaTeX and output them as "
+                    "sojourn-vs-error_DATASET_SIGMA_D-OVER-N.pdf")
+args = parser.parse_args()
 
-if for_paper:
+if args.for_paper:
     plot_helpers.config_paper()
 
-glob_str = 'results_{}_{}_{}_[0-9.]*.s'.format(dataset, sigma, d_over_n)
+glob_str = 'results_{}_{}_{}_[0-9.]*.s'.format(args.dataset, args.sigma, args.d_over_n)
 shelve_files = sorted((float(fname.split('_')[4][:-2]), fname)
                       for fname in glob(glob_str))
 loads = [load for load, _ in shelve_files]
@@ -39,9 +48,9 @@ for load, fname in shelve_files:
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
 figures = [("No error", float(0), no_error, no_error_data),
-           (r"$\sigma={}$".format(sigma), sigma, with_error, with_error_data)]
+           (r"$\sigma={}$".format(args.sigma), args.sigma, with_error, with_error_data)]
 
-for title, sigma_, schedulers, data in figures:
+for title, sigma, schedulers, data in figures:
     plt.figure(title)
     plt.xlabel("load")
     plt.ylabel("mean sojourn time (s)")
@@ -51,10 +60,10 @@ for title, sigma_, schedulers, data in figures:
     plt.grid()
     plt.legend(loc=2)
 
-    if for_paper:
+    if args.for_paper:
         fmt = 'sojourn-vs-load_{}_{}_{}.pdf'
-        fname = fmt.format(dataset, sigma_, d_over_n)
+        fname = fmt.format(args.dataset, sigma, args.d_over_n)
         plt.savefig(fname)
 
-if not for_paper:
+if not args.for_paper:
     plt.show()

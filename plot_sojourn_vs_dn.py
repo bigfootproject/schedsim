@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import shelve
-import sys
 
 from glob import glob
 
@@ -11,16 +10,26 @@ import matplotlib.pyplot as plt
 
 import plot_helpers
 
-dataset, sigma, load = sys.argv[1:4]
-sigma = float(sigma)
-load = float(load)
+import argparse
 
-for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
+parser = argparse.ArgumentParser(description="produce boxplots for sojourn "
+                                 "time vs. d/n")
+parser.add_argument('dataset', help="name of the .tsv file used.")
+parser.add_argument('sigma', type=float, help="sigma parameter for the "
+                    "log-normal error function")
+parser.add_argument('--load', type=float, default=0.9,
+                    help="average load in the simulated cluster")
+parser.add_argument('--paper', dest='for_paper', action='store_const',
+                    const=True, default=False, help="render plots with "
+                    "LaTeX and output them as "
+                    "sojourn-vs-error_DATASET_SIGMA_LOAD.pdf")
+args = parser.parse_args()
 
-if for_paper:
+if args.for_paper:
     plot_helpers.config_paper()
 
-glob_str = 'results_{}_{}_[0-9.]*_{}.s'.format(dataset, sigma, load)
+glob_str = 'results_{}_{}_[0-9.]*_{}.s'.format(args.dataset, args.sigma,
+                                               args.load)
 shelve_files = sorted((float(fname.split('_')[3]), fname)
                       for fname in glob(glob_str))
 dns = [dn for dn, _ in shelve_files]
@@ -39,7 +48,7 @@ for dn, fname in shelve_files:
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
 figures = [("No error", float(0), no_error, no_error_data),
-           (r"$\sigma={}$".format(sigma), sigma, with_error, with_error_data)]
+           (r"$\sigma={}$".format(args.sigma), args.sigma, with_error, with_error_data)]
 
 for title, sigma, schedulers, data in figures:
     plt.figure(title)
@@ -52,10 +61,10 @@ for title, sigma, schedulers, data in figures:
     plt.grid()
     plt.legend(loc=2)
 
-    if for_paper:
+    if args.for_paper:
         fmt = 'sojourn-vs-dn_{}_{}_{}.pdf'
-        fname = fmt.format(dataset, sigma, load)
+        fname = fmt.format(args.dataset, sigma, args.load)
         plt.savefig(fname)
 
-if not for_paper:
+if not args.for_paper:
     plt.show()

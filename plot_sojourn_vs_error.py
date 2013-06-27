@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import shelve
-import sys
 
 from glob import glob
 
@@ -11,16 +10,26 @@ import matplotlib.pyplot as plt
 
 import plot_helpers
 
-dataset, d_over_n, load = sys.argv[1:4]
-d_over_n = float(d_over_n)
-load = float(load)
+import argparse
 
-for_paper = len(sys.argv) >= 5 and sys.argv[4] == 'paper'
+parser = argparse.ArgumentParser(description="produce boxplots for sojourn "
+                                 "time vs. errors")
+parser.add_argument('dataset', help="name of the .tsv file used.")
+parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
+                    default=4, help="ratio between disk and network "
+                    "bandwidth in the simulated cluster.")
+parser.add_argument('--load', type=float, default=0.9,
+                    help="average load in the simulated cluster")
+parser.add_argument('--paper', dest='for_paper', action='store_const',
+                    const=True, default=False, help="render plots with "
+                    "LaTeX and output them as "
+                    "sojourn-vs-error_DATASET_D-OVER-N_LOAD.pdf")
+args = parser.parse_args()
 
-if for_paper:
+if args.for_paper:
     plot_helpers.config_paper()
 
-glob_str = 'results_{}_[0-9.]*_{}_{}.s'.format(dataset, d_over_n, load)
+glob_str = 'results_{}_[0-9.]*_{}_{}.s'.format(args.dataset, args.d_over_n, args.load)
 shelve_files = sorted((float(fname.split('_')[2]), fname)
                       for fname in glob(glob_str))
 sigmas = [sigma for sigma, _ in shelve_files]
@@ -54,10 +63,10 @@ for scheduler, err_data in zip(with_error, with_error_data):
              max([max(d) for d in no_error_data]) / 0.85)
     plt.legend(loc=2)
 
-    if for_paper:
+    if args.for_paper:
         fmt = 'sojourn-vs-error_{}_{}_{}_{}.pdf'
-        fname = fmt.format(scheduler, dataset, d_over_n, load)
+        fname = fmt.format(scheduler, args.dataset, args.d_over_n, args.load)
         plt.savefig(fname)
 
-if not for_paper:
+if not args.for_paper:
     plt.show()

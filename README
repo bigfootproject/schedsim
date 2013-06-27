@@ -17,19 +17,7 @@ $./get_datasets
 
 === RUN THE EXPERIMENT ===
 
-$./experiment.py filename.tsv sigma iterations [d-over-n] [load]
-
- - filename.tsv: the .tsv file with the trace to use
- - sigma: the sigma parameter for the log-normal error function
- - iterations: number of iterations for each run of the experiment.
-   If that number of iterations is already in the results file,
-   nothing will be done.
- - d-over-n: the d/n parameter (details in our technical report)
-   to generate the workload starting from the .tsv file. Represents
-   the ratio between disk and network bandwidth in the simulated
-   cluster. Default value: 4.
- - load: the average load in the simulated cluster (details in
-   our technical report). Default value: 0.9.
+usage: experiment.py -h
 
 This will compute the sojourn times for each of the jobs in
 filename.tsv using FIFO, PS, SRPT and two variants of FSP that cope
@@ -46,28 +34,15 @@ to it.
 
 === PLOT THE RESULTS ===
 
-$./plot_sojourn_vs_error.py dataset d-over-n load [paper]
-
-Produces boxplots for sojourn time vs. errors.
-
-If the "paper" parameter is specified, .eps files will be rendered
-with Latex and output as sojourn-vs-error_dataset_d-over-n_load.pdf.
-
----
-
-$./plot_sojourn_vs_load.py dataset sigma d-over-n [paper]
-
-Produces plots that shows how mean sojourn time changes according to
-load.
-
-Again, the "paper" parameter produces plots -- both for no errors
-(sigma=0) and specified sigma in
-sojourn-vs-load_dataset_sigma_d-over-n.pdf
-
----
-
-$./plot_sojourn_vs_dn.py dataset sigma load [paper]
+usage: plot_sojourn_vs_error.py -h
+usage: plot_sojourn_vs_load.py -h
+usage: plot_sojourn_vs_dn.py -h
 
 Exactly as above, but varying d-over-n and keeping load fixed. Output
 graphs for the "paper" option will be
 sojourn-vs-dn_dataset_sigma_load.pdf.
+
+=== REPEAT THE EXPERIMENTS IN THE TECHNICAL REPORTS ===
+
+$./do_experiments
+$./do_plots

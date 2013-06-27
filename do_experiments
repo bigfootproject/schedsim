@@ -25,7 +25,7 @@ for workload in FB09-0 FB09-1 FB10; do
     for load in $(seq 0.1 0.1 2); do
     	echo load=$load
 	echo ---------
-	./experiment.py $workload.tsv 0.5 100 4 $load
+	./experiment.py $workload.tsv 0.5 100 --load $load
     	echo
     done
     echo
@@ -36,7 +36,7 @@ for workload in FB09-0 FB09-1 FB10; do
     for dn in $(seq 1 10); do
     	echo dn=$dn
 	echo -------
-	./experiment.py $workload.tsv 0.5 100 $dn 0.9
+	./experiment.py $workload.tsv 0.5 100 -dn $dn
     done
     echo
 done
