@@ -18,7 +18,8 @@ parser.add_argument('dataset', help="name of the .tsv file used.")
 parser.add_argument('sigma', type=float, help="sigma parameter for the "
                     "log-normal error function")
 parser.add_argument('--load', type=float, default=0.9,
-                    help="average load in the simulated cluster")
+                    help="average load in the simulated cluster; default is "
+                    "0.9")
 parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
                     "LaTeX and output them as "

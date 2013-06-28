@@ -30,9 +30,9 @@ computed only once rather than repeated depending on the number of
 iterations.
 
 Results will be output in a binary file (Python's shelve format) named
-'results_filename[.tsv stripped]_sigma_d-over-n_load.s'. If such a
+'results_FILENAME[.tsv stripped]_SIGMA_D-OVER-N_LOAD.s'. If such a
 file already exists, we simply add the results of more experiment runs
-to it.
+to it if the number of existing runs is not enough.
 
 === PLOT THE RESULTS ===
 

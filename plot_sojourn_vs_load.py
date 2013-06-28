@@ -19,7 +19,7 @@ parser.add_argument('sigma', type=float, help="sigma parameter for the "
                     "log-normal error function")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
                     default=4, help="ratio between disk and network "
-                    "bandwidth in the simulated cluster.")
+                    "bandwidth in the simulated cluster; default is 4")
 parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
                     "LaTeX and output them as "

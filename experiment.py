@@ -27,9 +27,10 @@ parser.add_argument('iterations', type=int,
                     "results file, nothing will be done.")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
                     default=4, help="ratio between disk and network "
-                    "bandwidth in the simulated cluster.")
+                    "bandwidth in the simulated cluster; default is 4")
 parser.add_argument('--load', type=float, default=0.9,
-                    help="average load in the simulated cluster")
+                    help="average load in the simulated cluster; default is "
+                    "0.9")
 args = parser.parse_args()
 
 jobs = parse_swim(args.swim_file, args.d_over_n, args.load)

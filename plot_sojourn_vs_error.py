@@ -17,9 +17,10 @@ parser = argparse.ArgumentParser(description="produce boxplots for sojourn "
 parser.add_argument('dataset', help="name of the .tsv file used.")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
                     default=4, help="ratio between disk and network "
-                    "bandwidth in the simulated cluster.")
+                    "bandwidth in the simulated cluster; default is 4")
 parser.add_argument('--load', type=float, default=0.9,
-                    help="average load in the simulated cluster")
+                    help="average load in the simulated cluster; default is "
+                    "0.9")
 parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
                     "LaTeX and output them as "
