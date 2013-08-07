@@ -8,18 +8,25 @@ import schedulers
 
 ARRIVAL, COMPLETE = 0, 1
 eps = 0.001
+rand = random.Random()
 
 def identity(x):
     return x
 
 def lognorm_error(sigma):
     def err_func(x):
-        return x * random.lognormvariate(0, sigma)
+        return x * rand.lognormvariate(0, sigma)
     return err_func
 
 def normal_error(sigma, factor=1):
     def err_func(x):
-        return factor * x * random.gauss(1, sigma)
+        return factor * x * rand.gauss(1, sigma)
+    return err_func
+
+def fixed_estimations(estimations):
+    estimations_i = iter(estimations)
+    def err_func(x):
+        return next(estimations_i)
     return err_func
 
 def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
