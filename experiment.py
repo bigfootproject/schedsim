@@ -51,7 +51,7 @@ n_jobs = len(jobids)
 
 job_start = {jobid: start for jobid, start, size in jobs}
 
-fname_short = (args.swim_file[:-4] if args.swim_file.endswith('tsv')
+fname_short = (args.swim_file[:-4] if args.swim_file.endswith('.tsv')
                else args.swim_file)
 result_fname = 'results_{}_{}_{}_{}.s'
 result_fname = result_fname.format(fname_short, args.sigma, args.d_over_n,
