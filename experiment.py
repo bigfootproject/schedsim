@@ -5,8 +5,6 @@ from __future__ import print_function
 import shelve
 import sys
 
-from random import lognormvariate
-
 from numpy import zeros
 
 from swim_parser import parse_swim
