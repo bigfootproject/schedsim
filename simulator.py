@@ -6,7 +6,7 @@ from heapq import *
 
 import schedulers
 
-ARRIVAL, COMPLETE = 0, 1
+ARRIVAL, COMPLETE, INTERNAL = 0, 1, 2
 eps = 0.001
 rand = random.Random()
 
@@ -65,6 +65,7 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
             del remaining[jobid]
             scheduler.dequeue(t, jobid)
         schedule = scheduler.schedule(t)
+        
         #assert sum(schedule.values()) < 1 + eps
         #assert not remaining or sum(schedule.values()) > 1 - eps
         #if (scheduler_factory.__name__ == 'PS'):
@@ -85,6 +86,10 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
             if (not events) or events[0][0] > next_complete:
                 heappush(events, (next_complete, COMPLETE, jobid))
 
+        next_int = scheduler.next_internal_event()
+        if next_int is not None and next_int < events[0][0]:
+            heappush(events, (next_int, INTERNAL, None))
+                     
         last_t = t
 
     assert not remaining

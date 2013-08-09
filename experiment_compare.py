@@ -31,7 +31,7 @@ with open(args.schedule) as f:
         jobs.append([jobid, float(t), float(d)])
 
 preset_est = {}
-if hasattr(args, 'estimations'):
+if args.estimations is not None:
     with open(args.estimations) as f:
         for line in f:
             jobid, e = line.strip().split()
@@ -46,7 +46,9 @@ instances = [('FIFO', schedulers.FIFO),
              ('PS', schedulers.PS),
              ('SRPT', schedulers.SRPT),
              ('FSPFIFO', schedulers.FSP),
-             ('FSP+PS', schedulers.FSP_plus_PS)]
+             ('FSP+PS', schedulers.FSP_plus_PS),
+             ('LAS', schedulers.LAS)
+             ]
 
 results = {}
 for name, scheduler in instances:
@@ -55,14 +57,14 @@ for name, scheduler in instances:
     results[name] = {jobid: t for t, jobid in sim}
 
 
-head_fmt = '\t'.join(['{}'] * (len(instances) + 3))
-fmt = '\t'.join(['{}'] + ['{:.2f}'] * (len(instances) + 2))
+head_fmt = '\t'.join(['{}'] * (len(instances) + 4))
+fmt = '\t'.join(['{}'] + ['{:.2f}'] * (len(instances) + 3))
 
 scheduler_names = [n for n, _ in instances]
-print(head_fmt.format('Job', 'Size', 'Est.', *scheduler_names))
+print(head_fmt.format('Job', 'Arr.', 'Size', 'Est.', *scheduler_names))
 print('=' * 79)
-for (jobid, _, d), e in zip(jobs, estimations):
-    print(fmt.format(jobid, d, e,
+for (jobid, arrival, d), e in zip(jobs, estimations):
+    print(fmt.format(jobid, arrival, d, e,
                      *(results[n][jobid] for n in scheduler_names)))
     
     

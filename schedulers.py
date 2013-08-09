@@ -6,7 +6,11 @@ from heapq import *
 
 import operator
 
-class PS:
+class Scheduler:
+    def next_internal_event(self):
+        return None
+
+class PS(Scheduler):
     def __init__(self):
         self.running = set()
 
@@ -14,7 +18,10 @@ class PS:
         self.running.add(jobid)
 
     def dequeue(self, t, jobid):
-        self.running.remove(jobid)
+        try:
+            self.running.remove(jobid)
+        except KeyError:
+            raise ValueError("dequeuing missing job")
 
     def schedule(self, t):
         running = self.running
@@ -24,7 +31,7 @@ class PS:
         else:
             return {}
 
-class FIFO:
+class FIFO(Scheduler):
     def __init__(self):
         self.jobs = deque()
 
@@ -32,7 +39,10 @@ class FIFO:
         self.jobs.append(jobid)
 
     def dequeue(self, t, jobid):
-        self.jobs.remove(jobid)
+        try:
+            self.jobs.remove(jobid)
+        except ValueError:
+            raise ValueError("dequeuing missing job")
 
     def schedule(self, t):
         jobs = self.jobs
@@ -41,7 +51,7 @@ class FIFO:
         else:
             return {}
 
-class SRPT:
+class SRPT(Scheduler):
     def __init__(self):
         self.jobs = []
         self.last_t = 0
@@ -69,8 +79,10 @@ class SRPT:
         # could be made more efficient, but still O(n) because of the
         # search, by exploiting heap properties (i.e., local heappop)
         else:
-            print("dequeueing a non-running job", jobid)
-            idx = next(i for i, v in jobs if v[1] == jobid)
+            try:
+                idx = next(i for i, v in jobs if v[1] == jobid)
+            except StopIteration:
+                raise ValueError("dequeuing missing job")
             jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
             jobs.pop()
             heapify(jobs)
@@ -83,7 +95,7 @@ class SRPT:
         else:
             return {}
 
-class FSP:
+class FSP(Scheduler):
     def __init__(self):
         self.v_remaining = [] # virtual PS -- sorted by simulated
                               # remaining work; could be made a better
@@ -128,7 +140,10 @@ class FSP:
         try:
             self.running.remove(jobid)
         except KeyError:
-            self.late.remove(jobid)
+            try:
+                self.late.remove(jobid)
+            except ValueError:
+                raise ValueError("dequeuing missing job")
 
     def schedule(self, t):
         self.update(t)
@@ -158,3 +173,82 @@ class FSP_plus_PS(FSP):
             return {jobid: 1}
         else:
             return {}
+
+class LAS(Scheduler):
+    def __init__(self, eps=0.001):
+        self.queue = []    # heap of (attained, jobid) pairs for waiting jobs
+        self.running = {}  # mapping to jobid to attained service for running
+                           # jobs
+        self.last_t = 0    # last time at which the schedule was changed
+        self.eps = eps     # two jobs are considered to have attained the
+                           # same service if they're within eps distance
+
+    def enqueue(self, t, jobid, size):
+        heappush(self.queue, (0, jobid))
+
+    def dequeue(self, t, jobid):
+        
+        schedule = self.running
+        try:
+            del schedule[jobid]
+        except KeyError:
+            queue = self.queue
+            try:
+                idx = next(i for i, (_, jid) in enumerate(queue)
+                           if jid == jobid)
+            except StopIteration:
+                raise ValueError("dequeuing missing job")
+            else:
+                del queue[idx]
+                heapify(queue)
+        else:
+            delta = t - self.last_t
+            service = delta / (len(schedule) + 1)
+            for jid in schedule:
+                schedule[jid] += service
+            self.last_t = t
+
+    def schedule(self, t):
+        
+        queue = self.queue
+        schedule = self.running
+        delta = t - self.last_t
+        if schedule:
+            service = delta / len(schedule)
+            for jobid, attained in schedule.items():
+                heappush(queue, (attained + service, jobid))
+        
+        new_schedule = {}
+        try:
+            threshold = queue[0][0] + self.eps
+        except IndexError:
+            # empty queue
+            pass
+        else:
+            while queue and queue[0][0] <= threshold:
+                attained, jobid = heappop(queue)
+                new_schedule[jobid] = attained
+        
+        self.last_t = t
+        self.running = new_schedule
+
+        njobs = len(new_schedule)
+        if njobs > 0:
+            return {jobid: 1 / njobs for jobid in new_schedule}
+        else:
+            return {}
+
+    def next_internal_event(self):
+
+        schedule = self.running
+        try:
+            running_service = next(iter(schedule.values()))
+        except StopIteration:
+            # no jobs scheduled
+            return None
+        if self.queue:
+            diff = self.queue[0][0] - running_service
+            return self.last_t + diff / len(schedule)
+        else:
+            return None
+        
