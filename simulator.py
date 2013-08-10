@@ -43,7 +43,7 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
     while events: # main loop
 
         t, event_type, event_data = heappop(events)
-        
+
         delta = t - last_t
         
         # update remaining sizes
@@ -74,6 +74,11 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
         # if a job would terminate before next event, insert the
         # COMPLETE event
 
+        next_int = scheduler.next_internal_event()
+        if next_int is not None:
+            if (not events) or next_int < events[0][0]:
+                heappush(events, (next_int, INTERNAL, None))
+                     
         if remaining:
             next_delta, jobid = min((remaining[jobid] / resources, jobid)
                                     for jobid, resources in schedule.items())
@@ -86,10 +91,6 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
             if (not events) or events[0][0] > next_complete:
                 heappush(events, (next_complete, COMPLETE, jobid))
 
-        next_int = scheduler.next_internal_event()
-        if next_int is not None and next_int < events[0][0]:
-            heappush(events, (next_int, INTERNAL, None))
-                     
         last_t = t
 
     assert not remaining

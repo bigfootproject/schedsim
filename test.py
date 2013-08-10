@@ -2,6 +2,9 @@ import unittest
 import schedulers
 import simulator
 
+def normalize(output):
+    return sorted((float(t), jobid) for t, jobid in output)
+
 class TestScheduler(unittest.TestCase):
 
     def setUp(self):
@@ -12,7 +15,7 @@ class TestScheduler(unittest.TestCase):
         return list(simulator.simulator(jobs, self.scheduler,error))
 
     def run_and_assertEqual(self,jobs,expected):
-        self.assertEqual(self.run_jobs(jobs), expected)
+        self.assertEqual(normalize(self.run_jobs(jobs)), normalize(expected))
 
     def run_with_estimations(self,jobs,estimations):
         f = simulator.fixed_estimations(estimations)
@@ -66,10 +69,10 @@ class TestSRPT(TestScheduler):
                                   ('job2', 0, 10),
                                   ('job3', 10, 10),
                                   ('job4', 20, 10)],
-                                 [(10,'job2'),
-                                  (20,'job3'),
-                                  (30,'job4'),
-                                  (45,'job1')])
+                                 [(10, 'job2'),
+                                  (20, 'job3'),
+                                  (30, 'job4'),
+                                  (45, 'job1')])
 
 class TestFSP(TestScheduler):
     scheduler = schedulers.FSP
@@ -97,5 +100,32 @@ class TestFSP(TestScheduler):
         result = self.run_with_estimations(jobs,[15, 20])
         self.assertEqual(result, [(10, 'job1'), (20, 'job2')])
 
+class TestLAS(TestScheduler):
+    scheduler = schedulers.LAS
+
+    def test_two(self):
+        self.run_and_assertEqual([('job1', 0, 20), ('job2', 0, 10)],
+                                 [(20, 'job2'), (30, 'job1')])
+
+    def test_two_delayed(self):
+        self.run_and_assertEqual([('job1', 0, 20), ('job2', 5, 10)],
+                                 [(20, 'job2'), (30, 'job1')])
+
+    def test_starvation(self):
+        self.run_and_assertEqual([('job1', 0, 15),
+                                  ('job2', 0, 10),
+                                  ('job3', 10, 10),
+                                  ('job4', 20, 10)],
+                                 [(40, 'job2'),
+                                  (40, 'job3'),
+                                  (40, 'job4'),
+                                  (45, 'job1')])
+
+    def test_longrunning(self):
+        self.run_and_assertEqual([('job1', 0, 100),
+                                  ('job2', 20, 10)],
+                                 [(30, 'job2'),
+                                  (110, 'job1')])
+        
 if __name__ == '__main__':
     unittest.main(verbosity=1)

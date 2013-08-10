@@ -209,7 +209,7 @@ class LAS(Scheduler):
             self.last_t = t
 
     def schedule(self, t):
-        
+
         queue = self.queue
         schedule = self.running
         delta = t - self.last_t
