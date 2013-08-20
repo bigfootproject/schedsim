@@ -80,16 +80,19 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
                 heappush(events, (next_int, INTERNAL, None))
                      
         if remaining:
-            next_delta, jobid = min((remaining[jobid] / resources, jobid)
-                                    for jobid, resources in schedule.items())
-
-            #if (scheduler_factory.__name__ == 'FSP'
-            #    and size_estimation is identity):
-            #    assert schedule == {jobid: 1}
-            
-            next_complete = t + next_delta
-            if (not events) or events[0][0] > next_complete:
-                heappush(events, (next_complete, COMPLETE, jobid))
+            completions = ((remaining[jobid] / resources, jobid)
+                           for jobid, resources in schedule.items())
+            try:
+                next_delta, jobid = min(completions)
+            except ValueError: # no scheduled items
+                pass
+            else:
+                #if (scheduler_factory.__name__ == 'FSP'
+                #    and size_estimation is identity):
+                #    assert schedule == {jobid: 1}
+                next_complete = t + next_delta
+                if (not events) or events[0][0] > next_complete:
+                    heappush(events, (next_complete, COMPLETE, jobid))
 
         last_t = t
 

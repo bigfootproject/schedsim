@@ -5,11 +5,19 @@ http://arxiv.org/abs/1306.6023.
 
 Needed software:
  - wget (to get the datasets)
- - Python 3 (should also work -- untested -- with Py2.7)
- - Python libraries: numpy, matplotlib (for plots)
+ - Python 3.2 or 2.7
+ - Python libraries: numpy, matplotlib (for plots), blist
+
+Pay attention: blist v1.3.4 has a trivial bug (a couple of missing
+underscores) that makes it not work in Python 3.2. At the time of this
+writing, the problem is fixed on github, but not on the version that
+can be installed from pypi. If you want to manually fix the bug, it's
+sufficient to replace self._mapping.sortedkeys with
+self._mapping._sortedkeys in lines 32 and 53 of _sorteddict.py.
 
 I got reported that this appears not to be sufficient with the Py2.7
-installed by default on MacOS.
+installed by default on MacOS. Contact me with your error if you have
+this problem.
 
 === GET THE WORKLOADS ===
 

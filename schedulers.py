@@ -3,6 +3,7 @@ from __future__ import division
 from collections import deque
 from bisect import insort
 from heapq import *
+from blist import sorteddict
 
 import operator
 
@@ -175,80 +176,106 @@ class FSP_plus_PS(FSP):
             return {}
 
 class LAS(Scheduler):
-    def __init__(self, eps=0.001):
-        self.queue = []    # heap of (attained, jobid) pairs for waiting jobs
-        self.running = {}  # mapping to jobid to attained service for running
-                           # jobs
-        self.last_t = 0    # last time at which the schedule was changed
-        self.eps = eps     # two jobs are considered to have attained the
-                           # same service if they're within eps distance
+    def __init__(self, eps=1e-6):
+        
+        # sorted dict of {attained: set(jobid)} for pending jobs
+        # grouped by attained service.
+        self.queue = sorteddict()
+        
+        # set of scheduled jobs and their attained service
+        self.scheduled = (set(), None)
+
+        # {jobid: attained] dictionary
+        self.rev_q = {}
+
+        # last time when the schedule was changed
+        self.last_t = 0
+        
+        # to handle rounding errors, two jobs are considered at the
+        # same service if they're within eps distance
+        self.eps = eps
+
+    def _insert_jobs(self, jobids, attained):
+        "Not trivial, because you have to take into account eps"
+
+        # update self.queue
+        queue = self.queue
+        keys = queue.keys()
+        idx = keys.bisect(attained)
+        eps = self.eps
+        if idx > 0 and attained - keys[idx - 1] < eps:
+            queue.values()[idx - 1].update(jobids)
+            attained = keys[idx - 1]
+        elif idx < len(keys) and keys[idx] - attained < eps:
+            queue.values()[idx].update(jobids)
+            attained = keys[idx]
+        else:
+            queue[attained] = jobids
+
+        # update self.rev_q
+        for jobid in jobids:
+            self.rev_q[jobid] = attained
 
     def enqueue(self, t, jobid, size):
-        heappush(self.queue, (0, jobid))
+        self._insert_jobs({jobid,}, 0)
 
     def dequeue(self, t, jobid):
-        
-        schedule = self.running
         try:
-            del schedule[jobid]
+            attained = self.rev_q[jobid]
         except KeyError:
-            queue = self.queue
-            try:
-                idx = next(i for i, (_, jid) in enumerate(queue)
-                           if jid == jobid)
-            except StopIteration:
-                raise ValueError("dequeuing missing job")
-            else:
-                del queue[idx]
-                heapify(queue)
-        else:
-            delta = t - self.last_t
-            service = delta / (len(schedule) + 1)
-            for jid in schedule:
-                schedule[jid] += service
-            self.last_t = t
+            raise ValueError("dequeuing missing job")
 
+        q_attained = self.queue[attained]
+        if len(q_attained) > 1:
+            q_attained.remove(jobid)
+        else:
+            del self.queue[attained]
+        del self.rev_q[jobid]
+    
     def schedule(self, t):
 
-        queue = self.queue
-        schedule = self.running
         delta = t - self.last_t
-        if schedule:
-            service = delta / len(schedule)
-            for jobid, attained in schedule.items():
-                heappush(queue, (attained + service, jobid))
+        running, attained = self.scheduled
         
-        new_schedule = {}
+        if running:
+            # Keep track of attained service for running jobs
+            service = delta / len(running)
+            new_attained = attained + service
+            try:
+                q_attained = self.queue[attained]
+            except KeyError:
+                pass
+            else:
+                remaining = q_attained - running
+                if not remaining:
+                    del self.queue[attained]
+                else:
+                    self.queue[attained] = remaining
+                serviced = q_attained & running
+                self._insert_jobs(serviced, new_attained)
+
+        # find the new schedule
         try:
-            threshold = queue[0][0] + self.eps
-        except IndexError:
-            # empty queue
-            pass
-        else:
-            while queue and queue[0][0] <= threshold:
-                attained, jobid = heappop(queue)
-                new_schedule[jobid] = attained
+            attained, running = self.queue.items()[0]
+            service = 1 / len(running)
+        except IndexError: # empty queue
+            attained, running, service = None, set(), None
+        self.scheduled = running.copy(), attained
         
         self.last_t = t
-        self.running = new_schedule
-
-        njobs = len(new_schedule)
-        if njobs > 0:
-            return {jobid: 1 / njobs for jobid in new_schedule}
-        else:
-            return {}
+        return {jobid: service for jobid in running}
 
     def next_internal_event(self):
-
-        schedule = self.running
-        try:
-            running_service = next(iter(schedule.values()))
-        except StopIteration:
-            # no jobs scheduled
-            return None
-        if self.queue:
-            diff = self.queue[0][0] - running_service
-            return self.last_t + diff / len(schedule)
-        else:
-            return None
         
+        running, r_attained = self.scheduled
+        if r_attained is None:
+            # no jobs scheduled yet
+            return None
+
+        for attained, jobs in self.queue.items():
+            diff = attained - r_attained
+            if diff > 0:
+                return self.last_t + diff / len(running)
+
+        # if we get here, no next internal events
+        return None
