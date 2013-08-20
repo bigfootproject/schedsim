@@ -26,7 +26,7 @@ $./get_datasets
 
 === RUN THE EXPERIMENT ===
 
-usage: experiment.py -h
+usage: ./experiment.py -h
 
 This will compute the sojourn times for each of the jobs in the
 specified TSV file using FIFO, PS, SRPT and two variants of FSP that
