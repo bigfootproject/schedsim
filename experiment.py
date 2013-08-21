@@ -24,7 +24,7 @@ parser.add_argument('iterations', type=int,
                     "If that number of iterations is already in the "
                     "results file, nothing will be done.")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
-                    default=4, help="ratio between disk and network "
+                    default=4.0, help="ratio between disk and network "
                     "bandwidth in the simulated cluster; default is 4")
 parser.add_argument('--load', type=float, default=0.9,
                     help="average load in the simulated cluster; default is "

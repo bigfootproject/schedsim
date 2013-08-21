@@ -18,7 +18,7 @@ parser.add_argument('dataset', help="name of the .tsv file used.")
 parser.add_argument('sigma', type=float, help="sigma parameter for the "
                     "log-normal error function")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
-                    default=4, help="ratio between disk and network "
+                    default=4.0, help="ratio between disk and network "
                     "bandwidth in the simulated cluster; default is 4")
 parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
@@ -35,7 +35,7 @@ shelve_files = sorted((float(fname.split('_')[4][:-2]), fname)
 loads = [load for load, _ in shelve_files]
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
-with_error = ['FIFO', 'PS', 'FSP + FIFO', 'FSP + PS', 'SRPT']
+with_error = ['FIFO', 'PS', 'LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT']
 
 no_error_data = [[] for _ in no_error]
 with_error_data = [[] for _ in with_error]
