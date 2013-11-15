@@ -24,7 +24,7 @@ parser.add_argument('--load', type=float, default=0.9,
 parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
                     "LaTeX and output them as "
-                    "sojourn-vs-error_DATASET_D-OVER-N_LOAD.pdf")
+                    "sojourn-vs-error_SCHEDULER_DATASET_D-OVER-N_LOAD.pdf")
 args = parser.parse_args()
 
 if args.for_paper:
@@ -36,7 +36,7 @@ shelve_files = sorted((float(fname.split('_')[2]), fname)
 sigmas = [sigma for sigma, _ in shelve_files]
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
-with_error = ['FSP + FIFO', 'FSP + PS', 'SRPT']
+with_error = ['FSP + FIFO', 'FSP + PS', 'SRPT', 'SRPT + PS']
 
 no_error_data = [[] for _ in no_error]
 with_error_data = [[] for _ in with_error]

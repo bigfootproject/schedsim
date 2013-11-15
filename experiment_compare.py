@@ -45,6 +45,7 @@ for jobid, _, d in jobs:
 instances = [('FIFO', schedulers.FIFO),
              ('PS', schedulers.PS),
              ('SRPT', schedulers.SRPT),
+             ('SRPTPS', schedulers.FSP_plus_PS),
              ('FSPFIFO', schedulers.FSP),
              ('FSP+PS', schedulers.FSP_plus_PS),
              ('LAS', schedulers.LAS)

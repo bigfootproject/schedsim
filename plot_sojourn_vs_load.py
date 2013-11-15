@@ -35,7 +35,7 @@ shelve_files = sorted((float(fname.split('_')[4][:-2]), fname)
 loads = [load for load, _ in shelve_files]
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
-with_error = ['FIFO', 'PS', 'LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT']
+with_error = ['FIFO', 'PS', 'LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT', 'SRPT + PS']
 
 no_error_data = [[] for _ in no_error]
 with_error_data = [[] for _ in with_error]

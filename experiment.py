@@ -42,6 +42,7 @@ instances = [
     ('FSP (no error)', schedulers.FSP, simulator.identity, None),
     ('LAS', schedulers.LAS, simulator.identity, None),
     ('SRPT', schedulers.SRPT, error, args.iterations),
+    ('SRPT + PS', schedulers.SRPT_plus_PS, error, args.iterations),
     ('FSP + FIFO', schedulers.FSP, error, args.iterations),
     ('FSP + PS', schedulers.FSP_plus_PS, error, args.iterations),
     ]

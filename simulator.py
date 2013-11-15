@@ -76,8 +76,9 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
 
         next_int = scheduler.next_internal_event()
         if next_int is not None:
-            if (not events) or next_int < events[0][0]:
-                heappush(events, (next_int, INTERNAL, None))
+            next_time = t + next_int
+            if (not events) or next_time < events[0][0]:
+                heappush(events, (next_time, INTERNAL, None))
                      
         if remaining:
             completions = ((remaining[jobid] / resources, jobid)

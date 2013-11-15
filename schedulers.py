@@ -76,17 +76,17 @@ class SRPT(Scheduler):
         # common case: we dequeue the running job
         if jobid == jobs[0][1]:
             heappop(jobs)
+            return
         # we still care if we dequeue a job not running (O(n)) --
         # could be made more efficient, but still O(n) because of the
         # search, by exploiting heap properties (i.e., local heappop)
-        else:
-            try:
-                idx = next(i for i, v in jobs if v[1] == jobid)
-            except StopIteration:
-                raise ValueError("dequeuing missing job")
-            jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
-            jobs.pop()
-            heapify(jobs)
+        try:
+            idx = next(i for i, v in jobs if v[1] == jobid)
+        except StopIteration:
+            raise ValueError("dequeuing missing job")
+        jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
+        jobs.pop()
+        heapify(jobs)
 
     def schedule(self, t):
         self.update(t)
@@ -96,15 +96,76 @@ class SRPT(Scheduler):
         else:
             return {}
 
+class SRPT_plus_PS(Scheduler):
+
+    def __init__(self, eps=1e-6):
+        self.jobs = []
+        self.last_t = 0
+        self.late = set()
+        self.eps = eps
+
+    def update(self, t):
+        delta = t - self.last_t
+        jobs = self.jobs
+        delta /= 1 + len(self.late) # key difference with SRPT #1
+        if jobs:
+            jobs[0][0] -= delta
+        while jobs and jobs[0][0] < self.eps:
+            _, jobid = heappop(jobs)
+            self.late.add(jobid)
+        self.last_t = t
+
+    def next_internal_event(self):
+        jobs = self.jobs
+        if not jobs:
+            return None
+        return jobs[0][0] / (1 + len(self.late))
+
+    def schedule(self, t):
+        self.update(t)
+        jobs = self.jobs
+        late = self.late
+        scheduled = late.copy() # key difference with SRPT #2
+        if jobs:
+            scheduled.add(jobs[0][1])
+        if not scheduled:
+            return {}
+        share = 1 / len(scheduled)
+        return {jobid: share for jobid in scheduled}
+
+    def enqueue(self, t, jobid, job_size):
+        self.update(t)
+        heappush(self.jobs, [job_size, jobid])
+    
+    def dequeue(self, t, jobid):
+        self.update(t)
+        late = self.late
+        if jobid in late:
+            late.remove(jobid)
+            return
+        # common case: we dequeue the running job
+        jobs = self.jobs
+        if jobid == jobs[0][1]:
+            heappop(jobs)
+            return
+        # we still care if we dequeue a job not running (O(n)) --
+        # could be made more efficient, but still O(n) because of the
+        # search, by exploiting heap properties (i.e., local heappop)
+        try:
+            idx = next(i for i, v in jobs if v[1] == jobid)
+        except StopIteration:
+            raise ValueError("dequeuing missing job")
+        jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
+        jobs.pop()
+        heapify(jobs)
+    
 class FSP(Scheduler):
     def __init__(self):
         self.v_remaining = [] # virtual PS -- sorted by simulated
                               # remaining work; could be made a better
-                              # data structure
-        self.running = set() # running & in the virtual PS
-        self.late = [] # should have completed, but didn't: error in
-                       # the estimation!
-        self.last_t = 0 
+        self.last_t = 0
+        self.running = set()
+        self.late = []
 
     def update(self, t):
 
@@ -160,6 +221,7 @@ class FSP(Scheduler):
             return {}
 
 class FSP_plus_PS(FSP):
+
     def schedule(self, t):
         self.update(t)
 
@@ -275,7 +337,7 @@ class LAS(Scheduler):
         for attained, jobs in self.queue.items():
             diff = attained - r_attained
             if diff > 0:
-                return self.last_t + diff / len(running)
+                return diff / len(running)
 
         # if we get here, no next internal events
         return None
