@@ -42,14 +42,14 @@ err_func = simulator.lognorm_error(args.sigma)
 for jobid, _, d in jobs:
     estimations.append(preset_est.get(jobid, err_func(d)))
 
-instances = [('FIFO', schedulers.FIFO),
-             ('PS', schedulers.PS),
-             ('SRPT', schedulers.SRPT),
-             ('SRPTPS', schedulers.FSP_plus_PS),
-             ('FSPFIFO', schedulers.FSP),
+instances = [#('FIFO', schedulers.FIFO),
+             #('PS', schedulers.PS),
+             #('SRPT', schedulers.SRPT),
+             #('SRPTPS', schedulers.SRPT_plus_PS),
+             #('FSP', schedulers.FSP),
              ('FSP+PS', schedulers.FSP_plus_PS),
-             ('LAS', schedulers.LAS)
-             ]
+             #('LAS', schedulers.LAS),
+            ]
 
 results = {}
 for name, scheduler in instances:
@@ -62,8 +62,9 @@ head_fmt = '\t'.join(['{}'] * (len(instances) + 4))
 fmt = '\t'.join(['{}'] + ['{:.2f}'] * (len(instances) + 3))
 
 scheduler_names = [n for n, _ in instances]
-print(head_fmt.format('Job', 'Arr.', 'Size', 'Est.', *scheduler_names))
-print('=' * 79)
+header = head_fmt.format('Job', 'Arr.', 'Size', 'Est.', *scheduler_names)
+print(header)
+print('=' * len(header.expandtabs()))
 for (jobid, arrival, d), e in zip(jobs, estimations):
     print(fmt.format(jobid, arrival, d, e,
                      *(results[n][jobid] for n in scheduler_names)))

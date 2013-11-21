@@ -74,11 +74,14 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
         # if a job would terminate before next event, insert the
         # COMPLETE event
 
+        candidate_event = False
         next_int = scheduler.next_internal_event()
         if next_int is not None:
             next_time = t + next_int
             if (not events) or next_time < events[0][0]:
-                heappush(events, (next_time, INTERNAL, None))
+                candidate_event = next_time, INTERNAL, None
+
+                # heappush(events, (next_time, INTERNAL, None))
                      
         if remaining:
             completions = ((remaining[jobid] / resources, jobid)
@@ -93,7 +96,12 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
                 #    assert schedule == {jobid: 1}
                 next_complete = t + next_delta
                 if (not events) or events[0][0] > next_complete:
-                    heappush(events, (next_complete, COMPLETE, jobid))
+                    if not candidate_event or candidate_event[0] > next_complete:
+                        candidate_event = next_complete, COMPLETE, jobid
+                    # heappush(events, (next_complete, COMPLETE, jobid))
+
+        if candidate_event:
+            heappush(events, candidate_event)
 
         last_t = t
 
