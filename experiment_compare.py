@@ -49,6 +49,7 @@ instances = [#('FIFO', schedulers.FIFO),
              #('FSP', schedulers.FSP),
              #('FSP+PS', schedulers.FSP_plus_PS),
              ('LAS', schedulers.LAS),
+             ('LAS2', schedulers.LAS2),
              #('FSP+LAS', schedulers.FSP_plus_LAS),
             ]
 

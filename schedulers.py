@@ -288,22 +288,28 @@ class LAS(Scheduler):
         # (not perfectly precise but avoids problems with floats)
         self.eps = eps
 
-        # sorted list for {attained: {jobid}}
+        # sorted dictionary for {attained: {jobid}}
         self.queue = sorteddict()
 
         # {jobid: attained} dictionary
         self.attained = {}
 
+        # result of the last time the schedule() method was called 
+        # grouped by {attained: [service, {jobid}]}
+        self.scheduled = {}
+        # This is the entry point for doing XXX + LAS schedulers:
+        # it's sufficient to touch here
+
         # last time when the schedule was changed
         self.last_t = 0
         
     def enqueue(self, t, jobid, size):
-        self.update(t)
+
         self.queue.setdefault(0, set()).add(jobid)
         self.attained[jobid] = 0
 
     def dequeue(self, t, jobid):
-        self.update(t)
+
         att = self.attained.pop(jobid)
         q = self.queue[att]
         if len(q) == 1:
@@ -314,29 +320,46 @@ class LAS(Scheduler):
     def update(self, t):
 
         delta = intceil((t - self.last_t) / self.eps)
-        self.last_t = t
-
-        if delta == 0:
-            return
-
         queue = self.queue
         attained = self.attained
+        set_att = set(attained)
 
-        if not queue:
-            return
+        for att, sub_schedule in self.scheduled.items():
 
-        old_att, jobs = queue.popitem()
-        new_att = old_att + delta
+            jobids = reduce(set.union, (jobids for _, jobids in sub_schedule))
 
-        # coalesce with all jobs until new_att + 1
-        while queue and next(iter(queue)) <= new_att + 1:
-            _, other_jobs = queue.popitem()
-            jobs.update(other_jobs)
-        
-        # update the state
-        queue[new_att] = jobs
-        for jobid in jobs:
-            attained[jobid] = new_att
+            # remove jobs from queue
+
+            try:
+                q_att = queue[att]
+            except KeyError:
+            	pass # all jobids have terminated
+            else:
+                q_att -= jobids
+                if not q_att:
+                	del queue[att]
+
+
+            # recompute attained values, re-put in queue,
+            # and update values in attained
+
+            for service, jobids in sub_schedule:
+
+                jobids &= set_att # exclude completed jobs
+                if not jobids:
+                    continue
+                new_att = att + intceil(service * delta)
+
+                # let's coalesce pieces of work differing only by eps, to avoid rounding errors
+                try:
+                	new_att = next(v for v in [new_att, new_att - 1, new_att + 1] if v in queue)
+                except StopIteration:
+                	pass
+
+                queue.setdefault(new_att, set()).update(jobids)
+                for jobid in jobids:
+                    attained[jobid] = new_att
+        self.last_t = t
 
     def schedule(self, t):
 
@@ -345,12 +368,13 @@ class LAS(Scheduler):
         try:
             attained, jobids = self.queue.items()[0]
         except IndexError:
-            res = {}
-            attained = None
+            service = 0
+            jobids = set()
+            self.scheduled = {}
         else:
             service = 1 / len(jobids)
-            res = {jobid: service for jobid in jobids}
-        return res
+            self.scheduled = {attained: [(service, jobids.copy())]}
+        return {jobid: service for jobid in jobids}
 
     def next_internal_event(self):
 
@@ -365,7 +389,7 @@ class LAS(Scheduler):
         else:
             return None
 
-class FSP_plus_LAS(Scheduler):
+class FSP_plus_LAS(LAS):
     
     def __init__(self, eps=1e-6):
         self.fsp = FSP(eps)
@@ -490,15 +514,7 @@ class FSP_plus_LAS(Scheduler):
         else:
             return las_event
 
-class FSP_plus_LAS2(FSP):
 
-    def __init__(self, *args, **kwargs):
-        FSP.__init__(self, *args, **kwargs)
-
-        # {jobid: att} where att is jobid's attained service
-        self.attained = {}
-        
-        self 
 
 
 
