@@ -350,9 +350,11 @@ class LAS(Scheduler):
                     continue
                 new_att = att + intceil(service * delta)
 
-                # let's coalesce pieces of work differing only by eps, to avoid rounding errors
-                try:
-                	new_att = next(v for v in [new_att, new_att - 1, new_att + 1] if v in queue)
+                # let's coalesce pieces of work differing only by eps, to avoid
+                # rounding errors
+                attvals = [new_att, new_att - 1, new_att + 1]
+                try:                
+                	new_att = next(v for v in attvals if v in queue)
                 except StopIteration:
                 	pass
 
@@ -389,135 +391,288 @@ class LAS(Scheduler):
         else:
             return None
 
-class FSP_plus_LAS(LAS):
-    
+#class FSP_plus_LAS(Scheduler):
+#    
+#    def __init__(self, eps=1e-6):
+#        self.fsp = FSP(eps)
+#        self.las = LAS(eps)
+#        self.fsp.late = dict(self.fsp.late) # we don't need the order
+
+#    def enqueue(self, t, jobid, size):
+#        self.fsp.enqueue(t, jobid, size)
+#        self.las.enqueue(t, jobid, size)
+
+#    def dequeue(self, t, jobid):
+#        self.fsp.dequeue(t, jobid)
+#        self.las.dequeue(t, jobid)
+
+#    def schedule(self, t):
+
+#        fsp = self.fsp
+#        las = self.las
+#        fsp.update(t)
+#        las.update(t)
+#        
+#        late = fsp.late
+
+#        # pretty intricated method, it's easier to understand it by skipping
+#        # the definitions of the inner functions first, to read the logic in
+#        # the end for this method and of las_schedule
+
+#        def fsp_schedule():
+#            res = fsp.schedule(t)
+#            if res:
+#                # FSP never schedules more than a single job
+#                ((jobid, service),) = res.items()
+#                las.scheduled = {las.attained[jobid]: [(1, {jobid})]}
+#            else:
+#                las.scheduled = {}
+#            return res
+
+#        def las_schedule():
+#            # FSP schedules and we "inform" LAS by updating its 'scheduled'
+#            # data structure
+#            
+#            # our algorithm works in this way: if late is smaller than queue,
+#            # we iterate through queue and get an idea of the rightmost position
+#            # we could hit in queue; if ever the search space for queue becomes
+#            # smaller than for late, we switch to iterating through queue
+
+#            queue = las.queue
+
+#            def iterate_late():
+#                # first strategy: we iterate through late, and raise
+#                # StopIteration if hi ()rightmost position we can hit in queue)
+#                # ever becomes lower than nlate
+#                nlate = len(late)
+#                hi = len(queue)
+
+#                if hi <= nlate:
+#                    raise StopIteration
+
+#                attained = las.attained
+#                qkeys = queue.keys()
+#                late_iter = iter(late)
+
+#                jobid = next(late_iter)
+#                min_att = attained[jobid]
+#                min_jobs = {jobid}
+#                hi = qkeys.bisect(min_att)
+#                nlate -= 1
+
+#                while nlate:
+#                    if nlate >= hi:
+#                        raise StopIteration
+#                    jobid = next(late_iter)
+#                    att = attained[jobid]
+#                    if att <= min_att:
+#                        if att == min_att:
+#                            min_jobs.add(jobid)
+#                        else:
+#                            min_att = att
+#                            min_jobs = {jobid}
+#                            hi = qkeys.bisect(min_att)
+#                    nlate -= 1
+#                return min_att, min_jobs
+
+#            def iterate_queue():
+#                # second strategy: queue is smaller, so it makes sense to go
+#                # through it
+#                for att, jobs in queue.items():
+#                    late_jobs = {jobid for jobid in jobs if jobid in late}
+#                    if late_jobs:
+#                        return att, late_jobs
+#                # we should never get here
+#                raise Error("Bug in the FSP+LAS scheduler")
+
+#            # We can now define what to do to "LAS-like" schedule late jobs
+
+#            try:
+#                att, jobs = iterate_late()
+#            except StopIteration:
+#                att, jobs = iterate_queue()
+
+#            service = 1 / len(jobs)
+#            las.scheduled = {att: [(service, jobs)]}
+#            return {jobid: service for jobid in jobs}
+
+#        if late:
+#            # LAS-like scheduling: we want to return the first jobs in queue
+#            # that are in late
+#            return las_schedule()
+#        else:
+#            return fsp_schedule()
+#        
+#    
+#    def next_internal_event(self):
+
+#        fsp_event = self.fsp.next_internal_event()
+#        las_event = self.las.next_internal_event()
+#        if fsp_event:
+#            if las_event:
+#                return min(fsp_event, las_event)
+#            else:
+#                return fsp_event
+#        else:
+#            return las_event
+
+class FSP_plus_LAS(Scheduler):
+
     def __init__(self, eps=1e-6):
-        self.fsp = FSP(eps)
-        self.las = LAS(eps)
-        self.fsp.late = dict(self.fsp.late) # we don't need the order
+
+        # [remaining, jobid] queue for the *virtual* scheduler
+        self.queue = blist()
+        
+        # Jobs that should have finished in the virtual time,
+        # but didn't in the real (happens only in case of estimation
+        # errors)
+        self.late = set()
+
+        # last time we run the schedule function
+        self.last_t = 0
+
+        # Jobs that are running in the real time
+        self.running = set()
+
+        # Jobs that have less than eps work to do are considered done
+        # (deals with floating point imprecision)
+        self.eps = eps
+
+        # queue for late jobs, sorted by attained service
+        self.late_queue = sorteddict()
+
+        # {jobid: att} where att is jobid's attained service
+        self.attained = {}
+
+        # last result of calling the schedule function
+        self.scheduled = {}
 
     def enqueue(self, t, jobid, size):
-        self.fsp.enqueue(t, jobid, size)
-        self.las.enqueue(t, jobid, size)
+        
+        self.update(t) # needed to age only existing jobs in the virtual queue
+        insort(self.queue, [intceil(size / self.eps), jobid])
+        self.running.add(jobid)
+        self.attained[jobid] = 0
 
     def dequeue(self, t, jobid):
-        self.fsp.dequeue(t, jobid)
-        self.las.dequeue(t, jobid)
+        
+        late = self.late
+        late_queue = self.late_queue
+
+        self.running.remove(jobid)
+        if jobid in late:
+            late.remove(jobid)
+            att = self.attained[jobid]
+            latt = self.late_queue[att]
+            if len(latt) == 1:
+                del self.late_queue[att]
+            else:
+                latt.remove(jobid)
+
+    def update(self, t):
+
+        attained = self.attained
+        eps = self.eps
+        late = self.late
+        late_queue = self.late_queue
+        queue = self.queue
+
+        delta = intceil((t - self.last_t) / eps)
+
+        # Real attained service
+
+        def qinsert(jobid, att):
+            # coalesce pieces of work differing only by eps to avoid rounding
+            # errors -- return the chosen attained work value
+            attvals = [att, att - 1, att + 1]
+            try:
+                att = next(v for v in attvals if v in late_queue)
+            except StopIteration:
+                late_queue[att] = {jobid}
+            else:
+                late_queue[att].add(jobid)
+            return att
+
+        if delta:
+            for jobid, service in self.scheduled.items():               
+                if jobid in self.late:
+                    old_att = self.attained[jobid]
+                    l_old = late_queue[old_att]
+                    l_old.remove(jobid)
+                    if not l_old:
+                        del late_queue[old_att]
+                    new_att = old_att + intceil(delta * service)
+                    new_att = qinsert(jobid, new_att)
+                    attained[jobid] = new_att
+                else:
+                    attained[jobid] += intceil(delta * service)
+                
+        # Virtual scheduler
+
+        if queue:
+            running = self.running
+            fair_share = intceil(delta / len(queue))
+            fair_plus_eps = fair_share + 1
+
+            # jobs in queue[:idx] are done in the virtual scheduler
+            idx = 0
+            for vrem, jobid in queue:
+                if vrem > fair_plus_eps:
+                    break
+                idx += 1
+                if jobid in running:
+                    late.add(jobid)
+                    attained[jobid] = qinsert(jobid, attained[jobid])
+                    
+            if idx:
+                del queue[:idx]
+
+            if fair_share > 0:
+                for vrem_jobid in queue:
+                    vrem_jobid[0] -= fair_share
+
+        self.last_t = t
 
     def schedule(self, t):
 
-        fsp = self.fsp
-        las = self.las
-        fsp.update(t)
-        las.update(t)
+        self.update(t)
         
-        late = fsp.late
+        late_queue = self.late_queue
+        running = self.running
 
-        # pretty intricated method, it's easier to understand it by skipping
-        # the definitions of the inner functions first, to read the logic in
-        # the end for this method and of las_schedule
-
-        def fsp_schedule():
-            res = fsp.schedule(t)
-            if res:
-                # FSP never schedules more than a single job
-                ((jobid, service),) = res.items()
-                las.scheduled = {las.attained[jobid]: [(1, {jobid})]}
-            else:
-                las.scheduled = {}
-            return res
-
-        def las_schedule():
-            # FSP schedules and we "inform" LAS by updating its 'scheduled'
-            # data structure
-            
-            # our algorithm works in this way: if late is smaller than queue,
-            # we iterate through queue and get an idea of the rightmost position
-            # we could hit in queue; if ever the search space for queue becomes
-            # smaller than for late, we switch to iterating through queue
-
-            queue = las.queue
-
-            def iterate_late():
-                # first strategy: we iterate through late, and raise
-                # StopIteration if hi ()rightmost position we can hit in queue)
-                # ever becomes lower than nlate
-                nlate = len(late)
-                hi = len(queue)
-
-                if hi <= nlate:
-                    raise StopIteration
-
-                attained = las.attained
-                qkeys = queue.keys()
-                late_iter = iter(late)
-
-                jobid = next(late_iter)
-                min_att = attained[jobid]
-                min_jobs = {jobid}
-                hi = qkeys.bisect(min_att)
-                nlate -= 1
-
-                while nlate:
-                    if nlate >= hi:
-                        raise StopIteration
-                    jobid = next(late_iter)
-                    att = attained[jobid]
-                    if att <= min_att:
-                        if att == min_att:
-                            min_jobs.add(jobid)
-                        else:
-                            min_att = att
-                            min_jobs = {jobid}
-                            hi = qkeys.bisect(min_att)
-                    nlate -= 1
-                return min_att, min_jobs
-
-            def iterate_queue():
-                # second strategy: queue is smaller, so it makes sense to go
-                # through it
-                for att, jobs in queue.items():
-                    late_jobs = {jobid for jobid in jobs if jobid in late}
-                    if late_jobs:
-                        return att, late_jobs
-                # we should never get here
-                raise Error("Bug in the FSP+LAS scheduler")
-
-            # We can now define what to do to "LAS-like" schedule late jobs
-
-            try:
-                att, jobs = iterate_late()
-            except StopIteration:
-                att, jobs = iterate_queue()
-
+        if late_queue:
+            jobs = next(iter(late_queue.values()))
             service = 1 / len(jobs)
-            las.scheduled = {att: [(service, jobs)]}
-            return {jobid: service for jobid in jobs}
-
-        if late:
-            # LAS-like scheduling: we want to return the first jobs in queue
-            # that are in late
-            return las_schedule()
+            res = {jobid: service for jobid in jobs}
+        elif not running:
+            res = {}
         else:
-            return fsp_schedule()
-        
-    
+            jobid = next(jobid for _, jobid in self.queue if jobid in running)
+            res = {jobid: 1}
+        self.scheduled = res
+
+        return res
+
     def next_internal_event(self):
 
-        fsp_event = self.fsp.next_internal_event()
-        las_event = self.las.next_internal_event()
-        if fsp_event:
-            if las_event:
-                return min(fsp_event, las_event)
-            else:
-                return fsp_event
-        else:
-            return las_event
+        eps = self.eps
+        late_queue = self.late_queue
+        queue = self.queue
 
+        res = None
 
-
-
-
-
-
+        if queue:
+            # time at which a job becomes late
+            res = queue[0][0] * len(queue) * eps
+        if len(late_queue) >= 2:
+            # time at which scheduled late jobs reach the service of
+            # others
+            qitems = late_queue.items()
+            running_attained, running_jobs = qitems[0]
+            waiting_attained, _ = qitems[1]
+            diff = waiting_attained - running_attained
+            delta = diff * len(running_jobs) * eps
+            if not res or res > delta:
+                res = delta
+        return res
 
