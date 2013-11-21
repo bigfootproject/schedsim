@@ -9,7 +9,7 @@ from math import ceil
 
 from blist import sorteddict, blist
 
-def intceil(x): # superfluous in Python 3
+def intceil(x): # superfluous in Python 3, ceil is sufficient
 	return int(ceil(x))
 
 class Scheduler:
@@ -164,76 +164,6 @@ class SRPT_plus_PS(Scheduler):
         jobs.pop()
         heapify(jobs)
     
-# class FSP(Scheduler):
-#     def __init__(self, eps=1e-6):
-#         self.v_remaining = [] # virtual PS -- sorted by simulated
-#                               # remaining work; could be made a better
-#                               # performing data structure
-#         self.last_t = 0
-#         self.running = set()
-#         self.late = []
-#         self.eps = eps
-
-#     def update(self, t):
-
-#         delta = t - self.last_t
-
-#         v_remaining = self.v_remaining
-#         eps = self.eps
-#         if v_remaining:
-#             fair_share = delta / len(v_remaining)
-#             while v_remaining and v_remaining[0][0] < fair_share + eps:
-#                 # a job terminates in the virtual PS
-#                 remaining_work, jobid = v_remaining[0]
-#                 del v_remaining[0] # O(n)!
-#                 if v_remaining:
-#                     # redistribute excess work to other jobs in the queue
-#                     fair_share += ((fair_share - remaining_work)
-#                                    / len(v_remaining))
-#                 if jobid in self.running:
-#                     self.running.remove(jobid)
-#                     self.late.append(jobid)
-#             for rw_jobid in v_remaining:
-#                 rw_jobid[0] -= fair_share
-
-#         self.last_t = t
-
-#     def enqueue(self, t, jobid, size):
-#         self.update(t)
-#         self.running.add(jobid)
-#         insort(self.v_remaining, [size, jobid])
-
-#     def dequeue(self, t, jobid):
-#         self.update(t)
-#         try:
-#             self.running.remove(jobid)
-#         except KeyError:
-#             try:
-#                 self.late.remove(jobid)
-#             except ValueError:
-#                 raise ValueError("dequeuing missing job")
-
-#     def schedule(self, t):
-#         self.update(t)
-
-#         if self.late:
-#             return {self.late[0]: 1}
-#         elif self.running:
-#             jobid = next((rw, jobid)
-#                          for rw, jobid in self.v_remaining
-#                          if jobid in self.running)[1]
-#             return {jobid: 1}
-#         else:
-#             return {}
-
-#     def next_internal_event(self):
-
-#     	v_remaining = self.v_remaining
-
-#     	if not v_remaining:
-#     		return None
-
-#     	return v_remaining[0][0] * len(v_remaining)
 
 class FSP(Scheduler):
 
@@ -330,9 +260,9 @@ class FSP(Scheduler):
 class FSP_plus_PS(FSP):
 
     def __init__(self, *args, **kwargs):
-    	
+
         FSP.__init__(self, *args, **kwargs)
-        self.late = {} # we don't need the order anymore!
+        self.late = dict(self.late) # we don't need the order anymore!
 
     def schedule(self, t):
 
@@ -350,129 +280,6 @@ class FSP_plus_PS(FSP):
         jobid = next(jobid for _, jobid in self.queue if jobid in running)
         return {jobid: 1}
 
-# class FSP_plus_PS(FSP):
-
-#     def schedule(self, t):
-#         self.update(t)
-
-#         late = self.late
-#         if late:
-#             share = 1 / len(late)
-#             return {job: share for job in late}
-#         elif self.running:
-#             jobid = next((rw, jobid)
-#                          for rw, jobid in self.v_remaining
-#                          if jobid in self.running)[1]
-#             return {jobid: 1}
-#         else:
-#             return {}
-
-
-# class LAS(Scheduler):
-
-#     def __init__(self, eps=1e-6):
-        
-#         # sorted dict of {attained: set(jobid)} for pending jobs
-#         # grouped by attained service.
-#         self.queue = sorteddict()
-        
-#         # set of scheduled jobs and their attained service
-#         self.scheduled = (set(), None)
-
-#         # {jobid: attained} dictionary
-#         self.rev_q = {}
-
-#         # last time when the schedule was changed
-#         self.last_t = 0
-        
-#         # to handle rounding errors, two jobs are considered at the
-#         # same service if they're within eps distance
-#         self.eps = eps
-
-#     def _insert_jobs(self, jobids, attained):
-#         "Not trivial, because you have to take into account eps"
-
-#         # update self.queue
-#         queue = self.queue
-#         keys = queue.keys()
-#         idx = keys.bisect(attained)
-#         eps = self.eps
-#         if idx > 0 and attained - keys[idx - 1] < eps:
-#             queue.values()[idx - 1].update(jobids)
-#             attained = keys[idx - 1]
-#         elif idx < len(keys) and keys[idx] - attained < eps:
-#             queue.values()[idx].update(jobids)
-#             attained = keys[idx]
-#         else:
-#             queue[attained] = jobids
-
-#         # update self.rev_q
-#         for jobid in jobids:
-#             self.rev_q[jobid] = attained
-
-#     def enqueue(self, t, jobid, size):
-#         self._insert_jobs({jobid,}, 0)
-
-#     def dequeue(self, t, jobid):
-#         try:
-#             attained = self.rev_q[jobid]
-#         except KeyError:
-#             raise ValueError("dequeuing missing job")
-
-#         q_attained = self.queue[attained]
-#         if len(q_attained) > 1:
-#             q_attained.remove(jobid)
-#         else:
-#             del self.queue[attained]
-#         del self.rev_q[jobid]
-    
-#     def schedule(self, t):
-
-#         delta = t - self.last_t
-#         running, attained = self.scheduled
-        
-#         if running:
-#             # Keep track of attained service for running jobs
-#             service = delta / len(running)
-#             new_attained = attained + service
-#             try:
-#                 q_attained = self.queue[attained]
-#             except KeyError:
-#                 pass
-#             else:
-#                 remaining = q_attained - running
-#                 if not remaining:
-#                     del self.queue[attained]
-#                 else:
-#                     self.queue[attained] = remaining
-#                 serviced = q_attained & running
-#                 self._insert_jobs(serviced, new_attained)
-
-#         # find the new schedule
-#         try:
-#             attained, running = self.queue.items()[0]
-#             service = 1 / len(running)
-#         except IndexError: # empty queue
-#             attained, running, service = None, set(), None
-#         self.scheduled = running.copy(), attained
-        
-#         self.last_t = t
-#         return {jobid: service for jobid in running}
-
-#     def next_internal_event(self):
-        
-#         running, r_attained = self.scheduled
-#         if r_attained is None:
-#             # no jobs scheduled yet
-#             return None
-
-#         for attained, jobs in self.queue.items():
-#             diff = attained - r_attained
-#             if diff > 0:
-#                 return diff / len(running)
-
-#         # if we get here, no next internal events
-#         return None
 
 class LAS(Scheduler):
 

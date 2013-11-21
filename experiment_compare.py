@@ -42,13 +42,13 @@ err_func = simulator.lognorm_error(args.sigma)
 for jobid, _, d in jobs:
     estimations.append(preset_est.get(jobid, err_func(d)))
 
-instances = [#('FIFO', schedulers.FIFO),
-             #('PS', schedulers.PS),
-             #('SRPT', schedulers.SRPT),
-             #('SRPTPS', schedulers.SRPT_plus_PS),
-             #('FSP', schedulers.FSP),
+instances = [('FIFO', schedulers.FIFO),
+             ('PS', schedulers.PS),
+             ('SRPT', schedulers.SRPT),
+             ('SRPTPS', schedulers.SRPT_plus_PS),
+             ('FSP', schedulers.FSP),
              ('FSP+PS', schedulers.FSP_plus_PS),
-             #('LAS', schedulers.LAS),
+             ('LAS', schedulers.LAS),
             ]
 
 results = {}
