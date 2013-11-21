@@ -45,6 +45,7 @@ instances = [
     ('SRPT + PS', schedulers.SRPT_plus_PS, error, args.iterations),
     ('FSP + FIFO', schedulers.FSP, error, args.iterations),
     ('FSP + PS', schedulers.FSP_plus_PS, error, args.iterations),
+    ('FSP + LAS', schedulers.FSP_plus_LAS, error, args.iterations),
     ]
 
 jobids = [jobid for jobid, _, _ in jobs]
