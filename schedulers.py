@@ -8,12 +8,15 @@ from math import ceil
 
 from blist import blist, sorteddict
 
-def intceil(x): # superfluous in Python 3, ceil is sufficient
+
+def intceil(x):  # superfluous in Python 3, ceil is sufficient
     return int(ceil(x))
+
 
 class Scheduler:
     def next_internal_event(self):
         return None
+
 
 class PS(Scheduler):
     def __init__(self):
@@ -36,6 +39,7 @@ class PS(Scheduler):
         else:
             return {}
 
+
 class FIFO(Scheduler):
     def __init__(self):
         self.jobs = deque()
@@ -55,6 +59,7 @@ class FIFO(Scheduler):
             return {jobs[0]: 1}
         else:
             return {}
+
 
 class SRPT(Scheduler):
     def __init__(self):
@@ -100,6 +105,7 @@ class SRPT(Scheduler):
         else:
             return {}
 
+
 class SRPT_plus_PS(Scheduler):
 
     def __init__(self, eps=1e-6):
@@ -111,7 +117,7 @@ class SRPT_plus_PS(Scheduler):
     def update(self, t):
         delta = t - self.last_t
         jobs = self.jobs
-        delta /= 1 + len(self.late) # key difference with SRPT #1
+        delta /= 1 + len(self.late)  # key difference with SRPT #1
         if jobs:
             jobs[0][0] -= delta
         while jobs and jobs[0][0] < self.eps:
@@ -129,7 +135,7 @@ class SRPT_plus_PS(Scheduler):
         self.update(t)
         jobs = self.jobs
         late = self.late
-        scheduled = late.copy() # key difference with SRPT #2
+        scheduled = late.copy()  # key difference with SRPT #2
         if jobs:
             scheduled.add(jobs[0][1])
         if not scheduled:
@@ -140,7 +146,7 @@ class SRPT_plus_PS(Scheduler):
     def enqueue(self, t, jobid, job_size):
         self.update(t)
         heappush(self.jobs, [job_size, jobid])
-    
+
     def dequeue(self, t, jobid):
         self.update(t)
         late = self.late
@@ -162,7 +168,7 @@ class SRPT_plus_PS(Scheduler):
         jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
         jobs.pop()
         heapify(jobs)
-    
+
 
 class FSP(Scheduler):
 
@@ -170,7 +176,7 @@ class FSP(Scheduler):
 
         # [remaining, jobid] queue for the *virtual* scheduler
         self.queue = blist()
-        
+
         # Jobs that should have finished in the virtual time,
         # but didn't in the real (happens only in case of estimation
         # errors)
@@ -188,9 +194,8 @@ class FSP(Scheduler):
         # (deals with floating point imprecision)
         self.eps = eps
 
-
     def enqueue(self, t, jobid, size):
-        self.update(t) # needed to age only existing jobs in the virtual queue
+        self.update(t)  # needed to age only existing jobs in the virtual queue
         insort(self.queue, [size, jobid])
         self.running.add(jobid)
 
@@ -235,7 +240,7 @@ class FSP(Scheduler):
     def schedule(self, t):
 
         self.update(t)
-        
+
         late = self.late
         if late:
             return {next(iter(late)): 1}
@@ -255,13 +260,14 @@ class FSP(Scheduler):
             return None
 
         return queue[0][0] * len(queue)
-        
+
+
 class FSP_plus_PS(FSP):
 
     def __init__(self, *args, **kwargs):
 
         FSP.__init__(self, *args, **kwargs)
-        self.late = dict(self.late) # we don't need the order anymore!
+        self.late = dict(self.late)  # we don't need the order anymore!
 
     def schedule(self, t):
 
@@ -283,7 +289,7 @@ class FSP_plus_PS(FSP):
 class LAS(Scheduler):
 
     def __init__(self, eps=1e-6):
-        
+
         # job attained service is represented as (real attained service // eps)
         # (not perfectly precise but avoids problems with floats)
         self.eps = eps
@@ -294,7 +300,7 @@ class LAS(Scheduler):
         # {jobid: attained} dictionary
         self.attained = {}
 
-        # result of the last time the schedule() method was called 
+        # result of the last time the schedule() method was called
         # grouped by {attained: [service, {jobid}]}
         self.scheduled = {}
         # This is the entry point for doing XXX + LAS schedulers:
@@ -302,7 +308,7 @@ class LAS(Scheduler):
 
         # last time when the schedule was changed
         self.last_t = 0
-        
+
     def enqueue(self, t, jobid, size):
 
         self.queue.setdefault(0, set()).add(jobid)
@@ -316,7 +322,7 @@ class LAS(Scheduler):
             del self.queue[att]
         else:
             q.remove(jobid)
-        
+
     def update(self, t):
 
         delta = intceil((t - self.last_t) / self.eps)
@@ -333,19 +339,18 @@ class LAS(Scheduler):
             try:
                 q_att = queue[att]
             except KeyError:
-            	pass # all jobids have terminated
+                pass  # all jobids have terminated
             else:
                 q_att -= jobids
                 if not q_att:
-                	del queue[att]
-
+                    del queue[att]
 
             # recompute attained values, re-put in queue,
             # and update values in attained
 
             for service, jobids in sub_schedule:
 
-                jobids &= set_att # exclude completed jobs
+                jobids &= set_att  # exclude completed jobs
                 if not jobids:
                     continue
                 new_att = att + intceil(service * delta)
@@ -353,10 +358,10 @@ class LAS(Scheduler):
                 # let's coalesce pieces of work differing only by eps, to avoid
                 # rounding errors
                 attvals = [new_att, new_att - 1, new_att + 1]
-                try:                
-                	new_att = next(v for v in attvals if v in queue)
+                try:
+                    new_att = next(v for v in attvals if v in queue)
                 except StopIteration:
-                	pass
+                    pass
 
                 queue.setdefault(new_att, set()).update(jobids)
                 for jobid in jobids:
@@ -398,7 +403,7 @@ class FSP_plus_LAS(Scheduler):
 
         # [remaining, jobid] queue for the *virtual* scheduler
         self.queue = blist()
-        
+
         # Jobs that should have finished in the virtual time,
         # but didn't in the real (happens only in case of estimation
         # errors)
@@ -424,14 +429,14 @@ class FSP_plus_LAS(Scheduler):
         self.scheduled = {}
 
     def enqueue(self, t, jobid, size):
-        
-        self.update(t) # needed to age only existing jobs in the virtual queue
+
+        self.update(t)  # needed to age only existing jobs in the virtual queue
         insort(self.queue, [intceil(size / self.eps), jobid])
         self.running.add(jobid)
         self.attained[jobid] = 0
 
     def dequeue(self, t, jobid):
-        
+
         late = self.late
         late_queue = self.late_queue
 
@@ -439,9 +444,9 @@ class FSP_plus_LAS(Scheduler):
         if jobid in late:
             late.remove(jobid)
             att = self.attained[jobid]
-            latt = self.late_queue[att]
+            latt = late_queue[att]
             if len(latt) == 1:
-                del self.late_queue[att]
+                del late_queue[att]
             else:
                 latt.remove(jobid)
 
@@ -470,7 +475,7 @@ class FSP_plus_LAS(Scheduler):
             return att
 
         if delta:
-            for jobid, service in self.scheduled.items():               
+            for jobid, service in self.scheduled.items():
                 if jobid in self.late:
                     old_att = self.attained[jobid]
                     l_old = late_queue[old_att]
@@ -482,7 +487,7 @@ class FSP_plus_LAS(Scheduler):
                     attained[jobid] = new_att
                 else:
                     attained[jobid] += intceil(delta * service)
-                
+
         # Virtual scheduler
 
         if queue:
@@ -499,7 +504,7 @@ class FSP_plus_LAS(Scheduler):
                 if jobid in running:
                     late.add(jobid)
                     attained[jobid] = qinsert(jobid, attained[jobid])
-                    
+
             if idx:
                 del queue[:idx]
 
@@ -512,7 +517,7 @@ class FSP_plus_LAS(Scheduler):
     def schedule(self, t):
 
         self.update(t)
-        
+
         late_queue = self.late_queue
         running = self.running
 
@@ -551,4 +556,3 @@ class FSP_plus_LAS(Scheduler):
             if not res or res > delta:
                 res = delta
         return res
-

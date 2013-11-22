@@ -5,7 +5,6 @@ import shelve
 from glob import glob
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 import plot_helpers
@@ -29,7 +28,8 @@ args = parser.parse_args()
 if args.for_paper:
     plot_helpers.config_paper()
 
-glob_str = 'results_{}_{}_{}_[0-9.]*.s'.format(args.dataset, args.sigma, args.d_over_n)
+glob_fmt = 'results_{}_{}_{}_[0-9.]*.s'
+glob_str = glob_fmt.format(args.dataset, args.sigma, args.d_over_n)
 shelve_files = sorted((float(fname.split('_')[4][:-2]), fname)
                       for fname in glob(glob_str))
 loads = [load for load, _ in shelve_files]
@@ -49,7 +49,8 @@ for load, fname in shelve_files:
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
 figures = [("No error", float(0), no_error, no_error_data),
-           (r"$\sigma={}$".format(args.sigma), args.sigma, with_error, with_error_data)]
+           (r"$\sigma={}$".format(args.sigma),
+            args.sigma, with_error, with_error_data)]
 
 for title, sigma, schedulers, data in figures:
     plt.figure(title)

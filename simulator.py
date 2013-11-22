@@ -2,7 +2,7 @@ from __future__ import division
 
 import random
 
-from heapq import *
+from heapq import heapify, heappop, heappush
 
 import schedulers
 
@@ -10,42 +10,48 @@ ARRIVAL, COMPLETE, INTERNAL = 0, 1, 2
 eps = 0.001
 rand = random.Random()
 
+
 def identity(x):
     return x
+
 
 def lognorm_error(sigma):
     def err_func(x):
         return x * rand.lognormvariate(0, sigma)
     return err_func
 
+
 def normal_error(sigma, factor=1):
     def err_func(x):
         return factor * x * rand.gauss(1, sigma)
     return err_func
 
+
 def fixed_estimations(estimations):
     estimations_i = iter(estimations)
+
     def err_func(x):
         return next(estimations_i)
     return err_func
 
+
 def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
 
     events = [(t, ARRIVAL, (jobid, size)) for jobid, t, size in jobs]
-    heapify(events) # not needed if jobs are sorted by arrival time
-    remaining = {} # mapping jobid to remaining size
-    schedule = {} # mapping from jobid to resource ratio -- values
-                  # should add up to <= 1
+    heapify(events)  # not needed if jobs are sorted by arrival time
+    remaining = {}   # mapping jobid to remaining size
+    schedule = {}    # mapping from jobid to resource ratio -- values
+                     # should add up to <= 1
     scheduler = scheduler_factory()
 
     last_t = 0
 
-    while events: # main loop
+    while events:  # main loop
 
         t, event_type, event_data = heappop(events)
 
         delta = t - last_t
-        
+
         # update remaining sizes
 
         for jobid, resources in schedule.items():
@@ -65,7 +71,7 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
             del remaining[jobid]
             scheduler.dequeue(t, jobid)
         schedule = scheduler.schedule(t)
-        
+
         #assert sum(schedule.values()) < 1 + eps
         #assert not remaining or sum(schedule.values()) > 1 - eps
         #if (scheduler_factory.__name__ == 'PS'):
@@ -81,24 +87,21 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
             if (not events) or next_time < events[0][0]:
                 candidate_event = next_time, INTERNAL, None
 
-                # heappush(events, (next_time, INTERNAL, None))
-                     
         if remaining:
             completions = ((remaining[jobid] / resources, jobid)
                            for jobid, resources in schedule.items())
             try:
                 next_delta, jobid = min(completions)
-            except ValueError: # no scheduled items
+            except ValueError:  # no scheduled items
                 pass
             else:
                 #if (scheduler_factory.__name__ == 'FSP'
                 #    and size_estimation is identity):
                 #    assert schedule == {jobid: 1}
                 next_complete = t + next_delta
-                if (not events) or events[0][0] > next_complete:
-                    if not candidate_event or candidate_event[0] > next_complete:
+                if not events or events[0][0] > next_complete:
+                    if not candidate_event or next_time > next_complete:
                         candidate_event = next_complete, COMPLETE, jobid
-                    # heappush(events, (next_complete, COMPLETE, jobid))
 
         if candidate_event:
             heappush(events, candidate_event)

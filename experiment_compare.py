@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+"""Run an experiment comparing schedulers on a given workload."""
+
 from __future__ import print_function
 
-import sys
 import argparse
 
 import schedulers
@@ -36,22 +37,22 @@ if args.estimations is not None:
         for line in f:
             jobid, e = line.strip().split()
             preset_est[jobid] = float(e)
-            
+
 estimations = []
-err_func = simulator.lognorm_error(args.sigma)            
+err_func = simulator.lognorm_error(args.sigma)
 for jobid, _, d in jobs:
     estimations.append(preset_est.get(jobid, err_func(d)))
 
 instances = [
-             ('FIFO', schedulers.FIFO),
-             ('PS', schedulers.PS),
-             ('SRPT', schedulers.SRPT),
-             ('SRPTPS', schedulers.SRPT_plus_PS),
-             ('FSP', schedulers.FSP),
-             ('FSP+PS', schedulers.FSP_plus_PS),
-             ('LAS', schedulers.LAS),
-             ('FSP+LAS', schedulers.FSP_plus_LAS),
-            ]
+    ('FIFO', schedulers.FIFO),
+    ('PS', schedulers.PS),
+    ('SRPT', schedulers.SRPT),
+    ('SRPTPS', schedulers.SRPT_plus_PS),
+    ('FSP', schedulers.FSP),
+    ('FSP+PS', schedulers.FSP_plus_PS),
+    ('LAS', schedulers.LAS),
+    ('FSP+LAS', schedulers.FSP_plus_LAS),
+]
 
 results = {}
 for name, scheduler in instances:
@@ -70,5 +71,3 @@ print('=' * len(header.expandtabs()))
 for (jobid, arrival, d), e in zip(jobs, estimations):
     print(fmt.format(jobid, arrival, d, e,
                      *(results[n][jobid] for n in scheduler_names)))
-    
-    

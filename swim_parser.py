@@ -8,10 +8,11 @@ import collections
 SwimJob = collections.namedtuple('SwimJob', 'jobid t delta m s r')
 Job = collections.namedtuple('Job', 'jobid t size')
 
+
 def parse_swim(fname, d_over_n, load):
 
     jobs = []
-    
+
     for line in open(fname):
         values = line.strip().split('\t')
         values[1:] = map(int, values[1:])

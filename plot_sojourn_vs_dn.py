@@ -5,7 +5,6 @@ import shelve
 from glob import glob
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 import plot_helpers
@@ -50,7 +49,8 @@ for dn, fname in shelve_files:
         with_error_data[i].append(np.array(res[scheduler]).mean())
 
 figures = [("No error", float(0), no_error, no_error_data),
-           (r"$\sigma={}$".format(args.sigma), args.sigma, with_error, with_error_data)]
+           (r"$\sigma={}$".format(args.sigma),
+            args.sigma, with_error, with_error_data)]
 
 for title, sigma, schedulers, data in figures:
     plt.figure(title)

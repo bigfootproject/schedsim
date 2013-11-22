@@ -5,7 +5,6 @@ import shelve
 from glob import glob
 
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 import plot_helpers
@@ -30,7 +29,8 @@ args = parser.parse_args()
 if args.for_paper:
     plot_helpers.config_paper()
 
-glob_str = 'results_{}_[0-9.]*_{}_{}.s'.format(args.dataset, args.d_over_n, args.load)
+glob_fmt = 'results_{}_[0-9.]*_{}_{}.s'
+glob_str = glob_fmt.format(args.dataset, args.d_over_n, args.load)
 shelve_files = sorted((float(fname.split('_')[2]), fname)
                       for fname in glob(glob_str))
 sigmas = [sigma for sigma, _ in shelve_files]

@@ -2,8 +2,10 @@ import unittest
 import schedulers
 import simulator
 
+
 def normalize(output):
     return sorted((float(t), jobid) for t, jobid in output)
+
 
 class TestScheduler(unittest.TestCase):
 
@@ -11,13 +13,13 @@ class TestScheduler(unittest.TestCase):
         if not hasattr(self, 'scheduler'):
             self.skipTest(reason="abstract TestScheduler class")
 
-    def run_jobs(self,jobs,error=simulator.identity):
-        return list(simulator.simulator(jobs, self.scheduler,error))
+    def run_jobs(self, jobs, error=simulator.identity):
+        return list(simulator.simulator(jobs, self.scheduler, error))
 
-    def run_and_assertEqual(self,jobs,expected):
+    def run_and_assertEqual(self, jobs, expected):
         self.assertEqual(normalize(self.run_jobs(jobs)), normalize(expected))
 
-    def run_with_estimations(self,jobs,estimations):
+    def run_with_estimations(self, jobs, estimations):
         f = simulator.fixed_estimations(estimations)
         result = self.run_jobs(jobs, error=f)
         return list(result)
@@ -28,6 +30,7 @@ class TestScheduler(unittest.TestCase):
     def test_one(self):
         result = self.run_jobs([("job1", 0, 10)])
         self.assertEqual(result, [(10, "job1")])
+
 
 class TestFIFO(TestScheduler):
     scheduler = schedulers.FIFO
@@ -74,6 +77,7 @@ class TestSRPT(TestScheduler):
                                   (30, 'job4'),
                                   (45, 'job1')])
 
+
 class TestFSP(TestScheduler):
     scheduler = schedulers.FSP
 
@@ -90,15 +94,16 @@ class TestFSP(TestScheduler):
                                   ('job2', 0, 10),
                                   ('job3', 10, 10),
                                   ('job4', 20, 10)],
-                                 [(10,'job2'),
-                                  (25,'job1'),
-                                  (35,'job3'),
-                                  (45,'job4')])
+                                 [(10, 'job2'),
+                                  (25, 'job1'),
+                                  (35, 'job3'),
+                                  (45, 'job4')])
 
     def test_error(self):
         jobs = [('job1', 0, 10), ('job2', 0, 10)]
-        result = self.run_with_estimations(jobs,[15, 20])
+        result = self.run_with_estimations(jobs, [15, 20])
         self.assertEqual(result, [(10, 'job1'), (20, 'job2')])
+
 
 class TestLAS(TestScheduler):
     scheduler = schedulers.LAS
@@ -126,6 +131,7 @@ class TestLAS(TestScheduler):
                                   ('job2', 20, 10)],
                                  [(30, 'job2'),
                                   (110, 'job1')])
-        
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=1)

@@ -62,9 +62,9 @@ result_fname = result_fname.format(fname_short, args.sigma, args.d_over_n,
 final_results = shelve.open(result_fname)
 
 for name, scheduler, errfunc, args.iterations in instances:
-    
+
     print("scheduler:", name)
-    
+
     if args.iterations is None:
         # if no. of iterations is None, it means that a single pass is
         # enough (no randomness there)
@@ -72,9 +72,9 @@ for name, scheduler, errfunc, args.iterations in instances:
             continue
         else:
             args.iterations = 1
-    
+
     scheduler_results = final_results.get(name, [])
-    
+
     for i in range(args.iterations - len(scheduler_results)):
         results = list(simulator.simulator(jobs, scheduler, errfunc))
         sojourns = zeros(n_jobs)
@@ -84,8 +84,8 @@ for name, scheduler, errfunc, args.iterations in instances:
         print(sojourns.mean(), end=' ')
         sys.stdout.flush()
     print()
-    
+
     final_results[name] = scheduler_results
     print()
-    
+
 final_results.close()
