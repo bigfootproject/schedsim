@@ -41,7 +41,7 @@ fname = fname_fmt.format(args.dataset, args.sigma, args.d_over_n, args.load)
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
 with_error = ['LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT',
-              'SRPT + PS', 'FSP + LAS']
+              'SRPT + PS', 'FSP + LAS', 'SRPT + LAS']
 
 workload = swim_parser.parse_swim('{}.tsv'.format(args.dataset),
                                   args.d_over_n, args.load)

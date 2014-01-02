@@ -6,7 +6,7 @@ from functools import reduce
 from heapq import heapify, heappop, heappush
 from math import ceil
 
-from blist import blist, sorteddict
+from blist import blist, sorteddict, sortedlist
 
 
 def intceil(x):  # superfluous in Python 3, ceil is sufficient
@@ -381,6 +381,7 @@ class LAS(Scheduler):
         else:
             service = 1 / len(jobids)
             self.scheduled = {attained: [(service, jobids.copy())]}
+            
         return {jobid: service for jobid in jobids}
 
     def next_internal_event(self):
@@ -395,6 +396,143 @@ class LAS(Scheduler):
             return diff * len(running_jobs) * self.eps
         else:
             return None
+
+
+class SRPT_plus_LAS(Scheduler):
+
+    def __init__(self, eps=1e-6):
+
+        # job that should have finished, but didn't
+        # (because of estimation errors)
+        self.late = set()
+
+        # [remaining, jobid] heap for the SRPT scheduler
+        self.queue = sortedlist()
+
+        # last time we run the update function
+        self.last_t = 0
+
+        # Jobs that have less than eps work to do are considered done
+        # (deals with floating point imprecision)
+        self.eps = eps
+
+        # {jobid: att} where att is jobid's attained service
+        self.attained = {}
+
+        # queue for late jobs, sorted by attained service
+        self.late_queue = sorteddict()
+
+        # last result of calling the schedule function
+        self.scheduled = {}
+
+    def enqueue(self, t, jobid, size):
+
+        size_int = intceil(size / self.eps)
+        self.queue.add([size_int, jobid])
+        self.attained[jobid] = 0
+
+    def dequeue(self, t, jobid):
+
+        att = self.attained.pop(jobid)
+        late = self.late
+        if jobid in late:
+            late_queue = self.late_queue
+            late.remove(jobid)
+            latt = late_queue[att]
+            if len(latt) == 1:
+                del late_queue[att]
+            else:
+                latt.remove(jobid)
+        else:
+            queue = self.queue
+            for i, (_, jid) in enumerate(queue):
+                if jid == jobid:
+                    del queue[i]
+                    break
+
+    def update(self, t):
+
+        attained = self.attained
+        eps = self.eps
+        late = self.late
+        late_queue = self.late_queue
+        queue = self.queue
+        scheduled = self.scheduled
+
+        delta = intceil((t - self.last_t) / eps)
+
+        # Real attained service
+
+        def qinsert(jobid, att):
+            # coalesce pieces of work differing only by eps to avoid rounding
+            # errors -- return the chosen attained work value
+            attvals = [att, att - 1, att + 1]
+            try:
+                att = next(v for v in attvals if v in late_queue)
+            except StopIteration:
+                late_queue[att] = {jobid}
+            else:
+                late_queue[att].add(jobid)
+            return att
+
+        for jobid, service in scheduled.items():
+            try:
+                old_att = self.attained[jobid]
+            except KeyError: # dequeued job
+                continue
+            work = intceil(delta * service)
+            new_att = old_att + work
+            if jobid in self.late:
+                l_old = late_queue[old_att]
+                l_old.remove(jobid)
+                if not l_old:
+                    del late_queue[old_att]
+                new_att = qinsert(jobid, new_att)
+            else:
+                idx, rem = next((i, r) for i, (r, jid)
+                                in enumerate(queue)
+                                if jid == jobid)
+                new_rem = rem - work
+                if new_rem <= 0:
+                    del queue[idx]
+                    late.add(jobid)
+                    new_att = qinsert(jobid, new_att)
+                else:
+                    if idx == 0:
+                        queue[0][0] = new_rem
+                    else:
+                        del queue[idx]
+                        queue.add([new_rem, jobid])
+            attained[jobid] = new_att
+
+        self.last_t = t
+
+    def schedule(self, t):
+
+        self.update(t)
+
+        queue = self.queue
+        late_queue = self.late_queue
+
+        jobs = {queue[0][1]} if queue else set()
+        if late_queue:
+            jobs.update(next(iter(late_queue.values())))
+
+        if jobs:
+            service = 1 / len(jobs)
+            res = {jobid: service for jobid in jobs}
+        else:
+            res = {}
+
+        self.scheduled = res
+        return res
+
+    def next_internal_event(self):
+
+        queue = self.queue
+
+        if queue:
+            return queue[0][0] * (len(self.late) + 1) * self.eps
 
 
 class FSP_plus_LAS(Scheduler):
@@ -438,10 +576,10 @@ class FSP_plus_LAS(Scheduler):
     def dequeue(self, t, jobid):
 
         late = self.late
-        late_queue = self.late_queue
 
         self.running.remove(jobid)
         if jobid in late:
+            late_queue = self.late_queue
             late.remove(jobid)
             att = self.attained[jobid]
             latt = late_queue[att]

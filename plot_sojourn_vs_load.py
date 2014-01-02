@@ -36,7 +36,7 @@ loads = [load for load, _ in shelve_files]
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
 with_error = ['FIFO', 'PS', 'LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT',
-              'SRPT + PS', 'FSP + LAS']
+              'SRPT + PS', 'FSP + LAS', 'SRPT + LAS']
 
 no_error_data = [[] for _ in no_error]
 with_error_data = [[] for _ in with_error]
