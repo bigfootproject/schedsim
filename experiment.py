@@ -16,22 +16,32 @@ import argparse
 parser = argparse.ArgumentParser(description="run the experiment; "
                                  "details on parameters in our TR "
                                  "at http://arxiv.org/abs/1306.6023")
-parser.add_argument('swim_file', help=".tsv file with the trace to use")
+parser.add_argument('file', help="file with the trace to use")
 parser.add_argument('sigma', type=float,
                     help="sigma parameter for the log-normal error function")
 parser.add_argument('iterations', type=int,
                     help="Iterations for each run of the experiment. "
                     "If that number of iterations is already in the "
                     "results file, nothing will be done.")
+parser.add_argument('--parse_swim', dest='parse_swim', default=False,
+                    action='store_true',
+                    help="parse data from a SWIM .tsv file")
 parser.add_argument('-dn', '--d-over-n', dest="d_over_n", type=float,
                     default=4.0, help="ratio between disk and network "
-                    "bandwidth in the simulated cluster; default is 4")
+                    "bandwidth in the simulated cluster; default is 4. "
+                    "Ignored unless --parse-swim is set")
 parser.add_argument('--load', type=float, default=0.9,
                     help="average load in the simulated cluster; default is "
-                    "0.9")
+                    "0.9. "
+                    "Ignored unless --parse-swim is set")
 args = parser.parse_args()
 
-jobs = parse_swim(args.swim_file, args.d_over_n, args.load)
+if args.parse_swim:
+    jobs = parse_swim(args.file, args.d_over_n, args.load)
+else:
+    with open(args.file) as f:
+        jobs = (line.strip().split() for line in f)
+        jobs = [(jobid, float(t), float(size)) for jobid, t, size in jobs]
 
 error = simulator.lognorm_error(args.sigma)
 
@@ -55,11 +65,16 @@ n_jobs = len(jobids)
 
 job_start = {jobid: start for jobid, start, size in jobs}
 
-fname_short = (args.swim_file[:-4] if args.swim_file.endswith('.tsv')
-               else args.swim_file)
-result_fname = 'results_{}_{}_{}_{}.s'
-result_fname = result_fname.format(fname_short, args.sigma, args.d_over_n,
-                                   args.load)
+if args.parse_swim:
+    fname_short = (args.file[:-4] if args.file.endswith('.tsv')
+                   else args.file)
+    result_fname = 'results_{}_{}_{}_{}.s'
+    result_fname = result_fname.format(fname_short, args.sigma, args.d_over_n,
+                                       args.load)
+else:
+    fname_short = (args.file[:-4] if args.file.endswith('.txt')
+                   else args.file)
+    result_fname = 'results_{}.s'.format(fname_short)
 final_results = shelve.open(result_fname)
 
 for name, scheduler, errfunc, args.iterations in instances:
