@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./weibull_workload.py $1 $2 100000 > weibull_${1}_${2}.txt
