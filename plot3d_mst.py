@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import argparse
+import glob
 import shelve
-
-from glob import glob
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ parser.add_argument('--load', type=float, default=0.99,
 args = parser.parse_args()
 
 glob_str = 'results_weibull_[0-9.]*_{}_[0-9.]*.s'.format(args.load)
-fnames = glob(glob_str)
+fnames = glob.glob(glob_str)
 shapes, sigmas, mst = [], [], []
 shelves = {}
 for fname in fnames:
