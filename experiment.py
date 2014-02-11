@@ -74,7 +74,7 @@ if args.parse_swim:
 else:
     fname_short = (args.file[:-4] if args.file.endswith('.txt')
                    else args.file)
-    result_fname = 'results_{}.s'.format(fname_short)
+    result_fname = 'results_{}_{}.s'.format(fname_short, args.sigma)
 final_results = shelve.open(result_fname)
 
 for name, scheduler, errfunc, args.iterations in instances:
