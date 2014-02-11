@@ -19,7 +19,7 @@ old_names = {'FIFO': 'FIFO',
              'ESRPT': 'SRPT',
              'ESRPT+PS': 'SRPT + PS',
              'ESRPT+LAS': 'SRPT + LAS',
-             'EFSP': 'FSP',
+             'EFSP': 'FSP + FIFO',
              'EFSP+PS': 'FSP + PS',
              'EFSP+LAS': 'FSP + LAS'}
 
@@ -93,5 +93,10 @@ else:
 ax.set_zlabel(zlabel)
 ax.zaxis.set_major_formatter(formatter)
 plt.title(args.scheduler)
-surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0)
+if args.normalize:
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                           cmap=cm.bwr, linewidth=0.05, vmin=-6, vmax=6)
+else:
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                           linewidth=0.05, cmap=cm.Greens)
 plt.show()
