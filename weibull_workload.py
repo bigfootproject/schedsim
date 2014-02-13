@@ -13,10 +13,10 @@ def workload(shape, load, time_shape=1, seed=None):
     
     t = 0
     scale = 1 / math.gamma(1 + 1 / shape)
-    time_scale = 1 / math.gamma(1 + 1 / time_shape) / load
+    time_scale = (1 / math.gamma(1 + 1 / time_shape)) / load
     weibullvariate = random.weibullvariate
-    for i in itertools.count():
-        yield (i, t, weibullvariate(scale, shape))
+    while True:
+        yield (t, weibullvariate(scale, shape))
         t += weibullvariate(time_scale, time_shape)
 
 def main():
@@ -36,13 +36,21 @@ def main():
     parser.add_argument('--interarr', type=float, default=1,
                         help="shape parameter for the Weibull distribution "
                         "of inter-arrival times; default is 1 (i.e. "
-                        "exponential distribution")
+                        "exponential distribution)")
     parser.add_argument('n', type=int, help="number of jobs in the workload")
     args = parser.parse_args()
 
     jobs = workload(args.shape, args.load, args.interarr, args.seed)
-    for jobid, t, size in itertools.islice(jobs, args.n):
-        print("{}\t{}\t{}".format(jobid, t, size))
+    jobs = list(itertools.islice(jobs, args.n))
+
+    # we now 'stretch' job submission times to ensure the load is
+    # exactly the one we wanted
+    
+    totsize = sum(size for _, size in jobs)
+    stretch_factor = totsize / (jobs[-1][0] * args.load)
+
+    for jobid, (t, size) in enumerate(jobs):
+        print("{}\t{}\t{}".format(jobid, t * stretch_factor, size))
 
 if __name__ == '__main__':
     main()
