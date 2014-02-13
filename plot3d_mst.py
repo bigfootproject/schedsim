@@ -16,12 +16,12 @@ old_names = {'FIFO': 'FIFO',
              'SRPT': 'SRPT (no error)',
              'FSP': 'FSP (no error)',
              'LAS': 'LAS',
-             'ESRPT': 'SRPT',
-             'ESRPT+PS': 'SRPT + PS',
-             'ESRPT+LAS': 'SRPT + LAS',
-             'EFSP': 'FSP + FIFO',
-             'EFSP+PS': 'FSP + PS',
-             'EFSP+LAS': 'FSP + LAS'}
+             'SRPTE': 'SRPT',
+             'SRPTE+PS': 'SRPT + PS',
+             'SRPTE+LAS': 'SRPT + LAS',
+             'FSPE': 'FSP + FIFO',
+             'FSPE+PS': 'FSP + PS',
+             'FSPE+LAS': 'FSP + LAS'}
 
 epilog_string = "Available schedulers: {}.".format(', '.join(sorted(old_names)))
 

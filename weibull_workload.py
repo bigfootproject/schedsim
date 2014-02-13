@@ -7,9 +7,10 @@ import itertools
 import math
 import random
 
-def workload(shape, load, time_shape=1, seed=None):
+def workload_gen(shape, load, time_shape=1, seed=None):
 
-    random.seed(seed)
+    if seed is not None:
+        random.seed(seed)
     
     t = 0
     scale = 1 / math.gamma(1 + 1 / shape)
@@ -19,6 +20,19 @@ def workload(shape, load, time_shape=1, seed=None):
         yield (t, weibullvariate(scale, shape))
         t += weibullvariate(time_scale, time_shape)
 
+def workload(shape, load, n, time_shape=1, seed=None):
+    gen = workload_gen(shape, load, time_shape, seed)
+    jobs = list(itertools.islice(gen, n))
+
+    # we now 'stretch' job submission times to ensure the load is
+    # exactly the one we wanted
+    
+    totsize = sum(size for _, size in jobs)
+    stretch_factor = totsize / (jobs[-1][0] * load)
+
+    return [(t * stretch_factor, size) for t, size in jobs]
+    
+        
 def main():
     import argparse
 
@@ -40,17 +54,9 @@ def main():
     parser.add_argument('n', type=int, help="number of jobs in the workload")
     args = parser.parse_args()
 
-    jobs = workload(args.shape, args.load, args.interarr, args.seed)
-    jobs = list(itertools.islice(jobs, args.n))
-
-    # we now 'stretch' job submission times to ensure the load is
-    # exactly the one we wanted
-    
-    totsize = sum(size for _, size in jobs)
-    stretch_factor = totsize / (jobs[-1][0] * args.load)
-
+    jobs = workload(args.shape, args.load, args.n, args.interarr, args.seed)
     for jobid, (t, size) in enumerate(jobs):
-        print("{}\t{}\t{}".format(jobid, t * stretch_factor, size))
+        print("{}\t{}\t{}".format(jobid, t, size))
 
 if __name__ == '__main__':
     main()
