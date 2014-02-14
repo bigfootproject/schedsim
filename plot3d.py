@@ -12,13 +12,13 @@ from matplotlib.ticker import FuncFormatter, LogLocator
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
-names = {'FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
-         'FSPE', 'FSPE+PS', 'FSPE+LAS'}
+names = ['FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
+         'FSPE', 'FSPE+PS', 'FSPE+LAS']
 axes = 'shape sigma load timeshape njobs'.split()
-epilog_string = "Available schedulers: {}.".format(', '.join(sorted(names)))
 
 parser = argparse.ArgumentParser(description="3d plot of mean sojourn time")
-parser.add_argument('scheduler', help="scheduler for which to plot results")
+parser.add_argument('scheduler', help="scheduler for which to plot results",
+                    choices=names)
 parser.add_argument('dirname', help="directory in which results are stored")
 parser.add_argument('--xaxis', default='shape', choices=axes,
                     help='what to put in the x-axis; default: shape')
@@ -30,7 +30,8 @@ parser.add_argument('--liny', default=False, action='store_true',
                     help='linear (instead of logarithmic) y axis')
 parser.add_argument('--linz', default=False, action='store_true',
                     help='linear (instead of logarithmic) z axis')
-parser.add_argument('--normalize', help="normalize against another scheduler")
+parser.add_argument('--normalize', choices=names,
+                    help="normalize against another scheduler")
 parser.add_argument('--shape', type=float, default=0.5,
                     help="shape for job size distribution "
                     "(if not on one of the axes); default: 0.5")
