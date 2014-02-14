@@ -104,6 +104,5 @@ for name, scheduler, errfunc, args.iterations in instances:
     print()
 
     final_results[name] = scheduler_results
-    print()
 
 final_results.close()

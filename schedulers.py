@@ -12,7 +12,6 @@ from blist import blist, sorteddict, sortedlist
 def intceil(x):  # superfluous in Python 3, ceil is sufficient
     return int(ceil(x))
 
-
 class Scheduler:
     def next_internal_event(self):
         return None
