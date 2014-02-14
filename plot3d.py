@@ -143,7 +143,7 @@ if not args.linz:
 plt.title(args.scheduler)
 if args.normalize:
     if args.linz:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
                                linewidth=0.05)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
