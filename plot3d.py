@@ -74,9 +74,13 @@ for fname in fnames:
         yval = 1 - yval
     xvals.add(xval)
     yvals.add(yval)
-    mst = getmean(fname, args.scheduler)
-    if args.normalize:
-        mst = mst / getmean(fname, args.normalize)
+    try:
+        mst = getmean(fname, args.scheduler)
+        if args.normalize:
+            mst = mst / getmean(fname, args.normalize)
+    except:
+        # the file is being written now
+        continue
     results[xval, yval].append(mst)
 
 print()
