@@ -142,9 +142,12 @@ if not args.linz:
     ax.zaxis.set_major_formatter(formatter)
 plt.title(args.scheduler)
 if args.normalize:
-    vmin, vmax = (0, 100) if args.linz else (-6, 6)
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                           cmap=cm.bwr, linewidth=0.05, vmin=vmin, vmax=vmax)
+    if args.linz:
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
+                               linewidth=0.05)
+    else:
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
+                               linewidth=0.05, vmin=-6, vmax=6)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                            linewidth=0.05, cmap=cm.Greens)
