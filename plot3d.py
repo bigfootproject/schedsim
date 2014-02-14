@@ -24,6 +24,12 @@ parser.add_argument('--xaxis', default='shape', choices=axes,
                     help='what to put in the x-axis; default: shape')
 parser.add_argument('--yaxis', default='sigma', choices=axes,
                     help='what to put in the y-axis; default: sigma')
+parser.add_argument('--linx', default='False', action=store_true,
+                    help='linear (instead of logarithmic) x axis')
+parser.add_argument('--liny', default='False', action=store_true,
+                    help='linear (instead of logarithmic) y axis')
+parser.add_argument('--linz', default='False', action=store_true,
+                    help='linear (instead of logarithmic) z axis')
 parser.add_argument('--normalize', help="normalize against another scheduler")
 parser.add_argument('--shape', type=float, default=0.5,
                     help="shape for job size distribution "
@@ -86,43 +92,59 @@ for fname in fnames:
 print()
 xvals = sorted(xvals)
 yvals = sorted(yvals)
-X, Y = np.log2(np.meshgrid(xvals, yvals))
+X, Y = np.meshgrid(xvals, yvals)
+if not args.linx:
+    X = np.log2(X)
+if not args.liny:
+    Y = np.log2(Y)
 Z = np.zeros_like(X)
 
 for i, xval in enumerate(xvals):
     for j, yval in enumerate(yvals):
-        Z[j, i] = np.log2(np.array(results[xval, yval]).mean())
+        z = np.array(results[xval, yval]).mean()
+        Z[j, i] = z if args.linz else np.log2(z)
 
 def format_func(x, pos):
     return '{:.3g}'.format(2 ** x)
 formatter = FuncFormatter(format_func)
 
 def load_format(x, pos):
-        return '{:.3g}'.format(1 - 2 ** x)
+    return '{:.3g}'.format(1 - 2 ** x)
 load_formatter = FuncFormatter(load_format)
+def load_linformat(x, pos):
+    return str(1 - x)
+load_linformatter = FuncFormatter(load_linformat)
         
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel(args.xaxis)
 ax.set_ylabel(args.yaxis)
 if args.xaxis == 'load':
-    ax.xaxis.set_major_formatter(load_formatter)
-else:
+    if args.linx:
+        ax.xaxis.set_major_formatter(load_linformatter)
+    else:
+        ax.xaxis.set_major_formatter(load_formatter)
+elif not args.linx:
     ax.xaxis.set_major_formatter(formatter)
 if args.yaxis == 'load':
-    ax.yaxis.set_major_formatter(load_formatter)
-else:
+    if args.linx:
+        ax.yaxis.set_major_formatter(load_linformatter)
+    else:
+        ax.yaxis.set_major_formatter(load_formatter)
+elif not args.linx:
     ax.yaxis.set_major_formatter(formatter)
 if args.normalize:
     zlabel = "MST / MST({})".format(args.normalize)
 else:
     zlabel = "Mean sojourn time"
 ax.set_zlabel(zlabel)
-ax.zaxis.set_major_formatter(formatter)
+if not args.linz:
+    ax.zaxis.set_major_formatter(formatter)
 plt.title(args.scheduler)
 if args.normalize:
+    vmin, vmax = (0, 100) if args.linz else (-6, 6)
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                           cmap=cm.bwr, linewidth=0.05, vmin=-6, vmax=6)
+                           cmap=cm.bwr, linewidth=0.05, vmin=vmin, vmax=vmax)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                            linewidth=0.05, cmap=cm.Greens)
