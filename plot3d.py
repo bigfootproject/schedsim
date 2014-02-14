@@ -24,11 +24,11 @@ parser.add_argument('--xaxis', default='shape', choices=axes,
                     help='what to put in the x-axis; default: shape')
 parser.add_argument('--yaxis', default='sigma', choices=axes,
                     help='what to put in the y-axis; default: sigma')
-parser.add_argument('--linx', default='False', action=store_true,
+parser.add_argument('--linx', default='False', action='store_true',
                     help='linear (instead of logarithmic) x axis')
-parser.add_argument('--liny', default='False', action=store_true,
+parser.add_argument('--liny', default='False', action='store_true',
                     help='linear (instead of logarithmic) y axis')
-parser.add_argument('--linz', default='False', action=store_true,
+parser.add_argument('--linz', default='False', action='store_true',
                     help='linear (instead of logarithmic) z axis')
 parser.add_argument('--normalize', help="normalize against another scheduler")
 parser.add_argument('--shape', type=float, default=0.5,
