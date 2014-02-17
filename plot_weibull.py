@@ -46,6 +46,8 @@ parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
 parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
+parser.add_argument('--nolatex', type=bool, default=False, action='store_true',
+                    help="disable LaTeX rendering")
 args = parser.parse_args()
 
 if not args.est_factor and 'est_factor' != args.xaxis:
@@ -139,8 +141,9 @@ if args.xaxis == 'load':
 else:
     ax.set_xlim(minvs, maxvs)
 
-import plot_helpers
-plot_helpers.config_paper(15)
+if not args.nolatex:
+    import plot_helpers
+    plot_helpers.config_paper(15)
 
 plt.tight_layout(1)
     
