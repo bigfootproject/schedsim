@@ -14,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 names = ['FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
          'FSPE', 'FSPE+PS', 'FSPE+LAS']
-axes = 'shape sigma load timeshape njobs'.split()
+axes = 'shape sigma load timeshape njobs est_factor'.split()
 
 parser = argparse.ArgumentParser(description="3d plot of mean sojourn time")
 parser.add_argument('scheduler', help="scheduler for which to plot results",
@@ -45,7 +45,12 @@ parser.add_argument('--timeshape', type=float, default=1,
                     "inter-arrival times; default: 1 (i.e. exponential)")
 parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
+parser.add_argument('--est_factor', type=float,
+                    help="multiply estimated size by this value")
 args = parser.parse_args()
+
+if not args.est_factor:
+    axes.pop()
 
 xaxis_idx = axes.index(args.xaxis)
 yaxis_idx = axes.index(args.yaxis)
