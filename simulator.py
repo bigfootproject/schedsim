@@ -17,7 +17,7 @@ def identity(x):
 
 def lognorm_error(sigma, factor=1):
     def err_func(x):
-        return x * rand.lognormvariate(0, sigma)
+        return factor * x * rand.lognormvariate(0, sigma)
     return err_func
 
 
