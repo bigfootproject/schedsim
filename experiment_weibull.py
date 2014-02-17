@@ -38,6 +38,8 @@ parser.add_argument('--njobs', type=int, default=10000,
 parser.add_argument('--iterations', type=int, default=1,
                     help="number of times the experiment is run per "
                     "synthetic workload generated; default is 1")
+parser.add_argument('--est_factor', type=float,
+                    help="multiply estimated size by this value")
 parser.add_argument('--seed', type=int, help="random seed")
 args = parser.parse_args()
 
@@ -52,7 +54,11 @@ jobs = weibull_workload.workload(args.shape, args.load, args.njobs,
                                  args.time_shape)
 jobs = [(i, jobid, size) for i, (jobid, size) in enumerate(jobs)]
 
-error = simulator.lognorm_error(args.sigma)
+if args.est_factor:
+    error = simulator.lognorm_error(args.sigma, args.est_factor)
+else:
+    error = simulator.lognorm_error(args.sigma)
+    
 
 instances = [
     ('FIFO', schedulers.FIFO, simulator.identity, None),
@@ -74,9 +80,15 @@ n_jobs = len(jobids)
 
 job_start = {jobid: start for jobid, start, size in jobs}
 
-fname_mask = 'res_{}_{}_{}_{}_{}_{}.s'
-fname = fname_mask.format(args.shape, args.sigma, args.load, args.time_shape,
-                          args.njobs, seed)
+if args.est_factor:
+    fname_mask = 'res_{}_{}_{}_{}_{}_{}_{}.s'
+    fname = fname_mask.format(args.shape, args.sigma, args.load,
+                              args.time_shape, args.njobs, args.est_factor,
+                              seed)
+else:
+    fname_mask = 'res_{}_{}_{}_{}_{}_{}.s'
+    fname = fname_mask.format(args.shape, args.sigma, args.load,
+                              args.time_shape, args.njobs, seed)
 final_results = shelve.open(os.path.join(args.dirname, fname))
 
 for name, scheduler, errfunc, args.iterations in instances:
