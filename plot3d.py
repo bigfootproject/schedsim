@@ -89,6 +89,7 @@ for fname in fnames:
         # the file is being written now
         continue
     results[xval, yval].append(mst)
+cache.close()
 
 print()
 xvals = sorted(xvals)
