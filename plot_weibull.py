@@ -10,13 +10,16 @@ import os.path
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
+from matplotlib.ticker import FuncFormatter, ScalarFormatter, AutoLocator
 
 names = ['FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
          'FSPE', 'FSPE+PS', 'FSPE+LAS']
 axes = 'shape sigma load timeshape njobs est_factor'.split()
 
 plotted = 'FIFO PS LAS SRPTE FSPE FSPE+PS'.split()
+
+styles = {'FIFO': 'k-+', 'PS': 'k--+', 'LAS': 'k-.+',
+          'SRPTE': 'r-x', 'FSPE': 'r--x', 'FSPE+PS': 'r-.x'}
 
 parser = argparse.ArgumentParser(description="plot of mean sojourn time")
 parser.add_argument('dirname', help="directory in which results are stored")
@@ -88,21 +91,13 @@ cache.close()
 
 print()
 
-def load_format(x, pos):
-    return '{:.3g}'.format(1 - 2 ** x)
-load_formatter = FuncFormatter(load_format)
 def load_linformat(x, pos):
     return str(1 - x)
 load_linformatter = FuncFormatter(load_linformat)
 
-fig = plt.figure()
+fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
 ax.set_xlabel(args.xaxis)
-if args.xaxis == 'load':
-    if args.linx:
-        ax.xaxis.set_major_formatter(load_linformatter)
-    else:
-        ax.xaxis.set_major_formatter(load_formatter)
 if args.normalize:
     ylabel = "MST / MST({})".format(args.normalize)
 else:
@@ -111,22 +106,42 @@ ax.set_ylabel(ylabel)
 for scheduler in plotted:
     sched_results = sorted(results[scheduler].items())
     xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
-    
+    style = styles[scheduler]
     if args.linx:
         if args.liny:
-            ax.plot(xs, ys, label=scheduler)
+            plotfun = ax.plot
         else:
-            ax.semilogy(xs, ys, label=scheduler)
+            plotfun = ax.semilogy
     else:
         if args.liny:
-            ax.semilogx(xs, ys, label=scheduler)
+            plotfun = ax.semilogx
         else:
-            ax.loglog(xs, ys, label=scheduler)
+            plotfun = ax.loglog
+    plotfun(xs, ys, style, label=scheduler, linewidth=2, markersize=10)
 
-ax.legend(loc=0)
+ax.legend(loc=0, ncol=2)
 
-ax.set_xlim(min(min(vs) for vs in results.values()),
-            max(max(vs) for vs in results.values()))
-            
+if args.xaxis == 'load':
+    ax.xaxis.set_major_formatter(load_linformatter)
+    ax.xaxis.set_ticks([0.5, 0.1, 0.01, 0.001])
 
+if args.xaxis in ['shape', 'sigma', 'timeshape']:
+    ax.xaxis.set_ticks([0.125, 0.25, 0.5, 1, 2, 4])
+    ax.xaxis.set_ticklabels('0.125 0.25 0.5 1 2 4'.split())
+    
+ax.yaxis.set_major_formatter(ScalarFormatter())
+
+minvs = min(min(vs) for vs in results.values())
+maxvs = max(max(vs) for vs in results.values())
+
+if args.xaxis == 'load':
+    ax.set_xlim(maxvs, 0.00098)
+else:
+    ax.set_xlim(minvs, maxvs)
+
+import plot_helpers
+plot_helpers.config_paper(15)
+
+plt.tight_layout(1)
+    
 plt.show()
