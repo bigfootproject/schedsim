@@ -49,7 +49,7 @@ parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
 args = parser.parse_args()
 
-if not args.est_factor and 'est_factor' not in [args.xaxis, argx.yaxis]:
+if not args.est_factor and 'est_factor' not in [args.xaxis, args.yaxis]:
     axes.pop()
 
 xaxis_idx = axes.index(args.xaxis)
