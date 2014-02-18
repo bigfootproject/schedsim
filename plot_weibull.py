@@ -48,6 +48,16 @@ parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
 parser.add_argument('--nolatex', default=False, action='store_true',
                     help="disable LaTeX rendering")
+parser.add_argument('--xmin', type=float,
+                    help="minimum value on the x axis")
+parser.add_argument('--xmax', type=float,
+                    help="maximum value on the x axis")
+parser.add_argument('--ymin', type=float,
+                    help="minimum value on the y axis")
+parser.add_argument('--ymax', type=float,
+                    help="maximum value on the y axis")
+parser.add_argument('--nolegend', default=False, action='store_true',
+                    help="don't put a legend in the plot")
 args = parser.parse_args()
 
 if not args.est_factor and 'est_factor' != args.xaxis:
@@ -121,7 +131,9 @@ for scheduler in plotted:
             plotfun = ax.loglog
     plotfun(xs, ys, style, label=scheduler, linewidth=2, markersize=10)
 
-ax.legend(loc=0, ncol=2)
+if not args.nolegend:
+    ax.legend(loc=0, ncol=2)
+    
 ax.tick_params(axis='x', pad=7)
 
 if args.xaxis == 'load':
@@ -138,9 +150,16 @@ minvs = min(min(vs) for vs in results.values())
 maxvs = max(max(vs) for vs in results.values())
 
 if args.xaxis == 'load':
-    ax.set_xlim(maxvs, 0.00098)
+    ax.set_xlim(1 - args.xmin if args.xmin is not None else maxvs,
+                1 - args.xmax if args.xmax is not None else 0.00098)
 else:
-    ax.set_xlim(minvs, maxvs)
+    ax.set_xlim(args.xmin if args.xmin is not None else minvs,
+                args.xmax if args.xmax is not None else maxvs)
+
+if args.ymin is not None:
+    ax.set_ylim(bottom=args.ymin)
+if args.ymax is not None:
+    ax.set_ylim(top=args.ymax)
 
 if not args.nolatex:
     import plot_helpers
