@@ -58,6 +58,7 @@ parser.add_argument('--ymax', type=float,
                     help="maximum value on the y axis")
 parser.add_argument('--nolegend', default=False, action='store_true',
                     help="don't put a legend in the plot")
+parser.add_argument('--save', help="filename in which to save the plot")
 args = parser.parse_args()
 
 if not args.est_factor and 'est_factor' != args.xaxis:
@@ -166,5 +167,8 @@ if not args.nolatex:
     plot_helpers.config_paper(20)
 
 plt.tight_layout(1)
-    
+
+if args.save is not None:
+    plt.savefig(args.save)
+
 plt.show()
