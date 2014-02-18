@@ -18,7 +18,7 @@ axes = 'shape sigma load timeshape njobs est_factor'.split()
 
 plotted = 'FIFO PS LAS SRPTE FSPE FSPE+PS'.split()
 
-styles = {'FIFO': 'b--+', 'PS': 'b-+', 'LAS': 'b:+',
+styles = {'FIFO': 'c--+', 'PS': 'c-+', 'LAS': 'c:+',
           'SRPTE': 'k--x', 'FSPE': 'k:x', 'FSPE+PS': 'k-x'}
 
 parser = argparse.ArgumentParser(description="plot of mean sojourn time")
