@@ -163,7 +163,7 @@ if args.ymax is not None:
 
 if not args.nolatex:
     import plot_helpers
-    plot_helpers.config_paper(15)
+    plot_helpers.config_paper(20)
 
 plt.tight_layout(1)
     
