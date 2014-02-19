@@ -18,8 +18,11 @@ axes = 'shape sigma load timeshape njobs est_factor'.split()
 
 plotted = 'FIFO PS LAS SRPTE FSPE FSPE+PS'.split()
 
-styles = {'FIFO': 'c--+', 'PS': 'c-+', 'LAS': 'c:+',
-          'SRPTE': 'k--x', 'FSPE': 'k:x', 'FSPE+PS': 'k-x'}
+styles = {'FIFO': '--+', 'PS': '-+', 'LAS': ':+',
+          'SRPTE': '--x', 'FSPE': ':x', 'FSPE+PS': '-x'}
+
+colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
+          'SRPTE': 'r', 'FSPE': 'r', 'FSPE+PS': 'r'}        
 
 parser = argparse.ArgumentParser(description="plot of mean sojourn time")
 parser.add_argument('dirname', help="directory in which results are stored")
@@ -130,7 +133,8 @@ for scheduler in plotted:
             plotfun = ax.semilogx
         else:
             plotfun = ax.loglog
-    plotfun(xs, ys, style, label=scheduler, linewidth=2, markersize=10)
+    plotfun(xs, ys, style, label=scheduler, linewidth=2, markersize=10,
+            color=colors[scheduler])
 
 if not args.nolegend:
     ax.legend(loc=0, ncol=2)
