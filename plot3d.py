@@ -127,7 +127,7 @@ ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel(args.xaxis)
 ax.set_ylabel(args.yaxis)
 if args.xaxis == 'load':
-    ax.xaxis.set_ticks([0.5, 0.9, 0.99, 0.999])
+    ax.xaxis.set_ticks([0.5, 0.1, 0.01, 0.001])
     if args.linx:
         ax.xaxis.set_major_formatter(load_linformatter)
     else:
@@ -135,7 +135,7 @@ if args.xaxis == 'load':
 elif not args.linx:
     ax.xaxis.set_major_formatter(formatter)
 if args.yaxis == 'load':
-    ax.yaxis.set_ticks([0.5, 0.9, 0.99, 0.999])
+    ax.yaxis.set_ticks([0.5, 0.1, 0.01, 0.001])
     if args.linx:
         ax.yaxis.set_major_formatter(load_linformatter)
     else:
