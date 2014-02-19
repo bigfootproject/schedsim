@@ -121,13 +121,14 @@ load_formatter = FuncFormatter(load_format)
 def load_linformat(x, pos):
     return str(1 - x)
 load_linformatter = FuncFormatter(load_linformat)
+load_ticks = np.log2(1 - np.array([0.5, 0.9, 0.99, 0.999]))
         
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel(args.xaxis)
 ax.set_ylabel(args.yaxis)
 if args.xaxis == 'load':
-    ax.yaxis.set_ticks([0.001, 0.01, 0.1, 0.5])
+    ax.xaxis.set_ticks(load_ticks)
     if args.linx:
         ax.xaxis.set_major_formatter(load_linformatter)
     else:
@@ -135,7 +136,7 @@ if args.xaxis == 'load':
 elif not args.linx:
     ax.xaxis.set_major_formatter(formatter)
 if args.yaxis == 'load':
-    ax.yaxis.set_ticks([0.001, 0.01, 0.1, 0.5])
+    ax.yaxis.set_ticks(load_ticks)
     if args.linx:
         ax.yaxis.set_major_formatter(load_linformatter)
     else:
