@@ -162,16 +162,15 @@ if not args.notitle:
 if args.normalize:
     if args.linz:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
-                               linewidth=0.05)
+                               linewidth=0.02)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               linewidth=0.05, vmin=-6, vmax=6)
+                               linewidth=0.02, vmin=-6, vmax=6)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                           linewidth=0.05, cmap=cm.Greens)
+                           linewidth=0.02, cmap=cm.Greens)
 if not args.linz:
     minz, maxz = ax.zaxis.get_view_interval()
-    print(minz, maxz)
     ax.zaxis.set_ticks(range(math.ceil(minz), math.floor(maxz) + 1))
 
 plot_helpers.config_paper(20)
