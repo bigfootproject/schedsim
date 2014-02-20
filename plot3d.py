@@ -161,14 +161,12 @@ if not args.notitle:
     plt.title(args.scheduler)
 if args.normalize:
     if args.linz:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
-                               linewidth=0.02)
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               linewidth=0.02, vmin=-6, vmax=6)
+                               vmin=-6, vmax=6)
 else:
-    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                           linewidth=0.02, cmap=cm.Greens)
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
 if not args.linz:
     minz, maxz = ax.zaxis.get_view_interval()
     ax.zaxis.set_ticks(range(math.ceil(minz), math.floor(maxz) + 1))
