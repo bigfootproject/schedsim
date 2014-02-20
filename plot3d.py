@@ -53,6 +53,10 @@ parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
 parser.add_argument('--notitle', default=False, action='store_true',
                     help="do not render title")
+parser.add_argument('--zmin', type=float,
+                    help="minimum value on z axis")
+parser.add_argument('--zmax', type=float,
+                    help="maximum value on z axis")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
@@ -167,6 +171,12 @@ if args.normalize:
                                vmin=-2, vmax=2)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
+if args.zmin:
+    zmin = args.zmin if args.linz else np.log2(args.zmin)
+    ax.set_zlim(bottom=zmin)
+if args.zmax:
+    zmax = args.zmax if args.linz else np.log2(args.zmax)
+    ax.set_zlim(top=zmax)
 if not args.linz:
     minz, maxz = ax.zaxis.get_view_interval()
     ax.zaxis.set_ticks(range(math.ceil(minz), math.floor(maxz) + 1))
