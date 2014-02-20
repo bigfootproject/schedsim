@@ -169,7 +169,7 @@ else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                            linewidth=0.05, cmap=cm.Greens)
 
-plot_helpers.config_paper(30)
+plot_helpers.config_paper(20)
 
 plt.tight_layout(1)
 
