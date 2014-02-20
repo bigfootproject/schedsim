@@ -164,7 +164,7 @@ if args.normalize:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               vmin=-6, vmax=6)
+                               vmin=-2, vmax=2)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
 if not args.linz:
