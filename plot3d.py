@@ -7,6 +7,7 @@ import shelve
 import os.path
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, LogLocator
 from matplotlib import cm
@@ -47,6 +48,9 @@ parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
 parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
+parser.add_argument('--notitle', default=False, action='store_true',
+                    help="do not render title")
+parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
 if not args.est_factor and 'est_factor' not in [args.xaxis, args.yaxis]:
@@ -150,7 +154,8 @@ else:
 ax.set_zlabel(zlabel)
 if not args.linz:
     ax.zaxis.set_major_formatter(formatter)
-plt.title(args.scheduler)
+if not args.notitle:
+    plt.title(args.scheduler)
 if args.normalize:
     if args.linz:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
@@ -161,4 +166,14 @@ if args.normalize:
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                            linewidth=0.05, cmap=cm.Greens)
-plt.show()
+
+matplotlib.rc('font', **{'family': 'serif', 'serif': ['Palatino']})
+matplotlib.rc('text', usetex=True)
+
+plt.tight_layout(1)
+
+if args.save is not None:
+    plt.savefig(args.save)
+else:
+    plt.show()
+

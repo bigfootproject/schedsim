@@ -28,7 +28,7 @@ parser.add_argument('--sigma', type=float, default=0.5,
                     "default is 0.5")
 parser.add_argument('--load', type=float, default=0.9,
                     help="average load; default is 0.9")
-parser.add_argument('--time_shape', type=float, default=1,
+parser.add_argument('--timeshape', type=float, default=1,
                     help="shape parameter for the Weibull distribution of "
                     "inter-arrival time; default is 1 (i.e., exponential "
                     "distribution)")
@@ -51,7 +51,7 @@ else:
 random.seed(seed)
 
 jobs = weibull_workload.workload(args.shape, args.load, args.njobs,
-                                 args.time_shape)
+                                 args.timeshape)
 jobs = [(i, jobid, size) for i, (jobid, size) in enumerate(jobs)]
 
 if args.est_factor:
@@ -83,12 +83,12 @@ job_start = {jobid: start for jobid, start, size in jobs}
 if args.est_factor:
     fname_mask = 'res_{}_{}_{}_{}_{}_{}_{}.s'
     fname = fname_mask.format(args.shape, args.sigma, args.load,
-                              args.time_shape, args.njobs, args.est_factor,
+                              args.timeshape, args.njobs, args.est_factor,
                               seed)
 else:
     fname_mask = 'res_{}_{}_{}_{}_{}_{}.s'
     fname = fname_mask.format(args.shape, args.sigma, args.load,
-                              args.time_shape, args.njobs, seed)
+                              args.timeshape, args.njobs, seed)
 final_results = shelve.open(os.path.join(args.dirname, fname))
 
 for name, scheduler, errfunc, args.iterations in instances:
