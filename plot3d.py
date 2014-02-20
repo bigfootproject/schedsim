@@ -3,6 +3,7 @@
 import argparse
 import collections
 import glob
+import math
 import shelve
 import os.path
 
@@ -168,6 +169,10 @@ if args.normalize:
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
                            linewidth=0.05, cmap=cm.Greens)
+if not args.linz:
+    minz, maxz = ax.zaxis.get_view_interval()
+    print(minz, maxz)
+    ax.zaxis.set_ticks(range(math.ceil(minz), math.floor(maxz) + 1))
 
 plot_helpers.config_paper(20)
 
