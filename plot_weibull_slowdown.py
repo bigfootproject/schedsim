@@ -55,6 +55,8 @@ parser.add_argument('--ymax', type=float, default=1,
                     help="maximum value on the y axis")
 parser.add_argument('--nolegend', default=False, action='store_true',
                     help="don't put a legend in the plot")
+parser.add_argument('--legend_loc', default=0,
+                    help="location for the legend (see matplotlib doc)")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
@@ -91,24 +93,26 @@ fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
 ax.set_xlabel("slowdown")
 ax.set_ylabel("ECDF")
-ys = np.linspace(0.01, 1, 100)
+ys = np.linspace(args.ymin, args.ymax, 100)
 for scheduler, slowdowns in results.items():
     slowdowns.sort()
-    nslowdowns = len(slowdowns)
-    xs = [slowdowns[int(y * nslowdowns) - 1] for y in ys]
+    last_idx = len(slowdowns) - 1
+    indexes = np.linspace(args.ymin * last_idx, args.ymax * last_idx,
+                          100).astype(int)
+    xs = [slowdowns[idx] for idx in indexes]
     style = styles[scheduler]
-    ax.semilogx(xs, ys, style, label=scheduler, linewidth=2, markersize=10,
+    ax.semilogx(xs, ys, style, label=scheduler, linewidth=4,
                 color=colors[scheduler])
 
 if not args.nolegend:
-    ax.legend(loc=0, ncol=2)
+    ax.legend(loc=args.legend_loc, ncol=2)
     
 ax.tick_params(axis='x', pad=7)
 
 ax.set_xlim(left=args.xmin)
 if args.xmax is not None:
     ax.set_xlim(right=args.xmax)
-ax.set_ylim(args.ymin, args.ymax)
+#ax.set_ylim(args.ymin, args.ymax)
 
 if not args.nolatex:
     plot_helpers.config_paper(20)
