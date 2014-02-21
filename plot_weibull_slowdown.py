@@ -94,7 +94,8 @@ ax = fig.add_subplot(111)
 ax.set_xlabel("slowdown")
 ax.set_ylabel("ECDF")
 ys = np.linspace(args.ymin, args.ymax, 100)
-for scheduler, slowdowns in results.items():
+for scheduler in plotted:
+    slowdowns = results[scheduler]
     slowdowns.sort()
     last_idx = len(slowdowns) - 1
     indexes = np.linspace(args.ymin * last_idx, args.ymax * last_idx,
