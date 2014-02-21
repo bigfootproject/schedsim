@@ -24,7 +24,7 @@ styles = {'FIFO': '--', 'PS': '-', 'LAS': ':',
 colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
           'SRPTE': 'r', 'FSPE': 'r', 'FSPE+PS': 'r'}        
 
-parser = argparse.ArgumentParser(description="plot CDF of slowdown")
+parser = argparse.ArgumentParser(description="plot size vs. sojourn time")
 parser.add_argument('dirname', help="directory in which results are stored")
 parser.add_argument('--shape', type=float, default=0.5,
                     help="shape for job size distribution "
@@ -41,13 +41,13 @@ parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
 parser.add_argument('--nolatex', default=False, action='store_true',
                     help="disable LaTeX rendering")
-parser.add_argument('--xmin', type=float, default=1,
+parser.add_argument('--xmin', type=float,
                     help="minimum value on the x axis")
 parser.add_argument('--xmax', type=float,
                     help="maximum value on the x axis")
-parser.add_argument('--ymin', type=float, default=0,
+parser.add_argument('--ymin', type=float,
                     help="minimum value on the y axis")
-parser.add_argument('--ymax', type=float, default=1,
+parser.add_argument('--ymax', type=float,
                     help="maximum value on the y axis")
 parser.add_argument('--nolegend', default=False, action='store_true',
                     help="don't put a legend in the plot")
@@ -79,37 +79,40 @@ for fname in fnames:
     else:
         for scheduler in plotted:
             for sojourns in shelve_[scheduler]:
-                slowdowns = (sojourn / size
-                             for sojourn, size in zip(sojourns, job_sizes))
-                results[scheduler].extend(slowdowns)
+                pairs = ((size, sojourn / size)
+                         for sojourn, size in zip(sojourns, job_sizes))
+                results[scheduler].extend(pairs)
 
 print()
 
 fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
-ax.set_xlabel("slowdown")
-ax.set_ylabel("ECDF")
-ys = np.linspace(args.ymin, args.ymax, 100)
+ax.set_xlabel("job size")
+ax.set_ylabel("slowdown")
 for scheduler in plotted:
-    slowdowns = results[scheduler]
-    slowdowns.sort()
-    last_idx = len(slowdowns) - 1
-    indexes = np.linspace(args.ymin * last_idx, args.ymax * last_idx,
-                          100).astype(int)
-    xs = [slowdowns[idx] for idx in indexes]
+    pairs = results[scheduler]
+    pairs.sort()
+    pairs = np.array(pairs)
+    indexes = np.linspace(0, len(pairs), 101)
+    xs, ys = zip(*(pairs[ileft:iright].mean(0)
+                   for ileft, iright in zip(indexes[:-1], indexes[1:])))
     style = styles[scheduler]
-    ax.semilogx(xs, ys, style, label=scheduler, linewidth=4,
-                color=colors[scheduler])
+    ax.loglog(xs, ys, style, label=scheduler, linewidth=3,
+              color=colors[scheduler])
 
 if not args.nolegend:
     ax.legend(loc=args.legend_loc, ncol=2)
     
 ax.tick_params(axis='x', pad=7)
 
-ax.set_xlim(left=args.xmin)
+if args.xmin is not None:
+    ax.set_xlim(left=args.xmin)
 if args.xmax is not None:
     ax.set_xlim(right=args.xmax)
-#ax.set_ylim(args.ymin, args.ymax)
+if args.ymin is not None:
+    ax.set_ylim(left=args.ymin)
+if args.ymax is not None:
+    ax.set_ylim(right=args.ymax)
 
 if not args.nolatex:
     plot_helpers.config_paper(20)
