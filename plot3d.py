@@ -133,7 +133,7 @@ def load_linformat(x, pos):
     return str(1 - x)
 load_linformatter = FuncFormatter(load_linformat)
 load_ticks = np.log2(1 - np.array([0.5, 0.9, 0.99, 0.999]))
-njobs_ticks = [100, 1000, 10000, 100000]
+njobs_ticks = np.log2([100, 1000, 10000, 100000])
         
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
