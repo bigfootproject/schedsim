@@ -110,9 +110,9 @@ if args.xmin is not None:
 if args.xmax is not None:
     ax.set_xlim(right=args.xmax)
 if args.ymin is not None:
-    ax.set_ylim(left=args.ymin)
+    ax.set_ylim(bottom=args.ymin)
 if args.ymax is not None:
-    ax.set_ylim(right=args.ymax)
+    ax.set_ylim(top=args.ymax)
 
 if not args.nolatex:
     plot_helpers.config_paper(20)
