@@ -139,14 +139,16 @@ fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel(args.xaxis)
 ax.set_ylabel(args.yaxis)
+if args.xaxis == 'njobs':
+    ax.xaxis.set_ticks(njobs_ticks)
+if args.yaxis == 'njobs':
+    ax.yaxis.set_ticks(njobs_ticks)
 if args.xaxis == 'load':
     ax.xaxis.set_ticks(load_ticks)
     if args.linx:
         ax.xaxis.set_major_formatter(load_linformatter)
     else:
         ax.xaxis.set_major_formatter(load_formatter)
-elif args.xaxis == 'njobs':
-    ax.xaxis.set_ticks(njobs_ticks)
 elif not args.linx:
     ax.xaxis.set_major_formatter(formatter)
 if args.yaxis == 'load':
@@ -155,8 +157,6 @@ if args.yaxis == 'load':
         ax.yaxis.set_major_formatter(load_linformatter)
     else:
         ax.yaxis.set_major_formatter(load_formatter)
-elif args.yaxis == 'njobs':
-    ax.yaxis.set_ticks(njobs_ticks)
 elif not args.linx:
     ax.yaxis.set_major_formatter(formatter)
 if args.normalize:
