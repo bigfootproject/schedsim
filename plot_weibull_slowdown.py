@@ -94,7 +94,8 @@ for scheduler in plotted:
     slowdowns = results[scheduler]
     slowdowns.sort()
     last_idx = len(slowdowns) - 1
-    indexes = np.linspace(args.ymin * last_idx, args.ymax * last_idx,
+    indexes = np.linspace(max(0, args.ymin * last_idx),
+                          min(1, args.ymax * last_idx),
                           100).astype(int)
     xs = [slowdowns[idx] for idx in indexes]
     style = styles[scheduler]
