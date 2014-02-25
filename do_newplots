@@ -24,12 +24,12 @@ echo Figure 3
 for yaxis in load timeshape; do
     fname=plots/3d${yaxis}.pdf
     echo $fname
-    ./plot3d.py FSPE+PS $dirname --yaxis $yaxis --notitle --zmin 0.25 --zmax 1 --save $fname
+    ./plot3d.py FSPE+PS $dirname --normalize PS --yaxis $yaxis --notitle --zmin 0.25 --zmax 1 --save $fname
     pdfcrop $fname
 done
 fname=plots/3dnjobs.pdf
 echo $fname
-./plot3d.py FSPE+PS weibull_20140213 --notitle --yaxis njobs --zmin 0.25 --zmax 1 --save $fname
+./plot3d.py FSPE+PS weibull_20140213 --normalize PS --notitle --yaxis njobs --zmin 0.25 --zmax 1 --save $fname
 pdfcrop $fname
 
 echo
@@ -48,3 +48,4 @@ echo Figure 5
 fname=plots/size_vs_slowdown.pdf
 echo $fname
 ./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --save $fname
+pdfcrop $fname
