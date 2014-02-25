@@ -1,0 +1,49 @@
+#!/bin/sh
+
+dirname=weibull_20140217
+
+echo Figure 1
+for scheduler in SRPTE FSPE FSPE+PS; do
+    fname=plots/3d${scheduler}.pdf
+    echo $fname
+    ./plot3d.py $scheduler --normalize PS $dirname --notitle --zmin 0.25 --zmax 256 --save $fname
+    pdfcrop $fname
+done
+
+echo
+echo Figure 2
+for xaxis in shape sigma load timeshape; do
+    fname=plots/${xaxis}.pdf
+    echo $fname
+    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
+    pdfcrop $fname
+    
+echo
+echo Figure 3
+for yaxis in load timeshape; do
+    fname=plots/3d${yaxis}; do
+    echo $fname
+    ./plot3d.py FSPE+PS $dirname --yaxis $yaxis --notitle --zmin 0.25 --zmax 1 --save $fname
+    pdfcrop $fname
+done
+fname=plots/3dnjobs.pdf
+echo $fname
+./plot3d.py FSPE+PS weibull_20140213 --notitle --yaxis njobs --zmin 0.25 --zmax 1 --save $fname
+pdfcrop $fname
+
+echo
+echo Figure 4
+fname=plots/slowdown.pdf
+echo $fname
+./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.9 --xmax 100 --ymax 1.05 --legend_loc "center right" --save $fname
+pdfcrop $fname
+fname=plots/slowdown_zoom.pdf
+echo $fname
+./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.9 --xmax 100 --ymin 0.9 --ymax 1.005 --nolegend --save $fname
+pdfcrop $fname
+
+echo
+echo Figure 5
+fname=plots/size_vs_slowdown.pdf
+echo $fname
+./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --save $fname
