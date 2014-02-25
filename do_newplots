@@ -36,16 +36,16 @@ echo
 echo Figure 4
 fname=plots/slowdown.pdf
 echo $fname
-./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.9 --xmax 100 --ymax 1.05 --legend_loc "center right" --save $fname
+./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.95 --xmax 100 --ymax 1.02 --legend_loc "center right" --save $fname
 pdfcrop $fname
 fname=plots/slowdown_zoom.pdf
 echo $fname
-./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.9 --xmax 100 --ymin 0.9 --ymax 1.005 --nolegend --save $fname
+./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.95 --xmax 100 --ymin 0.9 --ymax 1.002 --nolegend --save $fname
 pdfcrop $fname
 
 echo
 echo Figure 5
 fname=plots/size_vs_slowdown.pdf
 echo $fname
-./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --save $fname
+./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --ymax 10000000 --save $fname
 pdfcrop $fname
