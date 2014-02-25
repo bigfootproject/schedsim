@@ -29,7 +29,7 @@ for yaxis in load timeshape; do
 done
 fname=plots/3dnjobs.pdf
 echo $fname
-./plot3d.py FSPE+PS weibull_20140213 --normalize PS --notitle --yaxis njobs --zmin 0.25 --zmax 1 --save $fname
+./plot3d.py FSPE+PS weibull_20140213 --normalize PS --notitle --xaxis njobs --yaxis shape --zmin 0.25 --zmax 1 --save $fname
 pdfcrop $fname
 
 echo
