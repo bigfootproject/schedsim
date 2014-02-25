@@ -22,7 +22,7 @@ done
 echo
 echo Figure 3
 for yaxis in load timeshape; do
-    fname=plots/3d${yaxis};
+    fname=plots/3d${yaxis}.pdf
     echo $fname
     ./plot3d.py FSPE+PS $dirname --yaxis $yaxis --notitle --zmin 0.25 --zmax 1 --save $fname
     pdfcrop $fname
