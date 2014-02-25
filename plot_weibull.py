@@ -16,9 +16,9 @@ names = ['FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
          'FSPE', 'FSPE+PS', 'FSPE+LAS']
 axes = 'shape sigma load timeshape njobs est_factor'.split()
 
-plotted = 'FIFO PS LAS SRPTE FSPE FSPE+PS'.split()
+plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
 
-styles = {'FIFO': '--+', 'PS': '-+', 'LAS': ':+',
+styles = {'FIFO': ':+', 'PS': '-+', 'LAS': '--+',
           'SRPTE': '--x', 'FSPE': ':x', 'FSPE+PS': '-x'}
 
 colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
@@ -61,11 +61,16 @@ parser.add_argument('--ymax', type=float,
                     help="maximum value on the y axis")
 parser.add_argument('--nolegend', default=False, action='store_true',
                     help="don't put a legend in the plot")
+parser.add_argument('--nofifo', default=False, action='store_true',
+                    help="don't plot FIFO")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
 if not args.est_factor and 'est_factor' != args.xaxis:
     axes.pop()
+
+if args.nofifo:
+    plotted.remove('FIFO')
 
 xaxis_idx = axes.index(args.xaxis)
 
