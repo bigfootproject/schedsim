@@ -89,13 +89,13 @@ fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
 ax.set_xlabel("slowdown")
 ax.set_ylabel("ECDF")
-ys = np.linspace(args.ymin, args.ymax, 100)
+ys = np.linspace(max(0, args.ymin), min(1, args.ymax), 100)
 for scheduler in plotted:
     slowdowns = results[scheduler]
     slowdowns.sort()
     last_idx = len(slowdowns) - 1
-    indexes = np.linspace(max(0, args.ymin * last_idx),
-                          min(1, args.ymax * last_idx),
+    indexes = np.linspace(max(0, args.ymin) * last_idx,
+                          min(1, args.ymax) * last_idx,
                           100).astype(int)
     xs = [slowdowns[idx] for idx in indexes]
     style = styles[scheduler]
@@ -110,7 +110,7 @@ ax.tick_params(axis='x', pad=7)
 ax.set_xlim(left=args.xmin)
 if args.xmax is not None:
     ax.set_xlim(right=args.xmax)
-#ax.set_ylim(args.ymin, args.ymax)
+ax.set_ylim(args.ymin, args.ymax)
 
 if not args.nolatex:
     plot_helpers.config_paper(20)
