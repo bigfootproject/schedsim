@@ -17,6 +17,7 @@ for xaxis in shape sigma load timeshape; do
     echo $fname
     ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
     pdfcrop $fname
+done
     
 echo
 echo Figure 3
