@@ -51,8 +51,7 @@ else:
     fname = args.fname
 
 no_error = ['FIFO', 'PS', 'LAS', 'FSP (no error)', 'SRPT (no error)']
-with_error = ['LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT',
-              'SRPT + PS', 'FSP + LAS', 'SRPT + LAS']
+with_error = ['LAS', 'FSP + FIFO', 'FSP + PS', 'SRPT']
 
 if args.tsv:
     workload_fname = '{}.tsv'.format(args.dataset)
