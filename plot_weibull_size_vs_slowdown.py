@@ -16,7 +16,7 @@ import weibull_workload
 
 axes = 'shape sigma load timeshape njobs'.split()
 
-plotted = 'SRPTE FSPE FSPE+PS PS LAS'.split()
+plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
 
 styles = {'FIFO': ':', 'PS': '-', 'LAS': '--',
           'SRPTE': '--', 'FSPE': ':', 'FSPE+PS': '-'}

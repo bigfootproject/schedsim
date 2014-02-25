@@ -12,10 +12,14 @@ done
 
 echo
 echo Figure 2
-for xaxis in shape sigma load timeshape; do
+xaxis=shape
+fname=plots/${xaxis}.pdf
+echo $fname
+./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
+for xaxis in sigma load timeshape; do
     fname=plots/${xaxis}.pdf
     echo $fname
-    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
+    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname --nofifo
     pdfcrop $fname
 done
     
