@@ -67,11 +67,11 @@ instances = [
     ('FSP', schedulers.FSP, simulator.identity, None),
     ('LAS', schedulers.LAS, simulator.identity, None),
     ('SRPTE', schedulers.SRPT, error, args.iterations),
-    ('SRPTE+PS', schedulers.SRPT_plus_PS, error, args.iterations),
-    ('SRPTE+LAS', schedulers.SRPT_plus_LAS, error, args.iterations),
+#    ('SRPTE+PS', schedulers.SRPT_plus_PS, error, args.iterations),
+#    ('SRPTE+LAS', schedulers.SRPT_plus_LAS, error, args.iterations),
     ('FSPE', schedulers.FSP, error, args.iterations),
     ('FSPE+PS', schedulers.FSP_plus_PS, error, args.iterations),
-    ('FSPE+LAS', schedulers.FSP_plus_LAS, error, args.iterations),
+#    ('FSPE+LAS', schedulers.FSP_plus_LAS, error, args.iterations),
     ]
 
 jobids = [jobid for jobid, _, _ in jobs]
