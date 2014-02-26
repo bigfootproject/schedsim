@@ -22,9 +22,15 @@ for xaxis in sigma load timeshape; do
     ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname --nofifo
     pdfcrop $fname
 done
+
+echo Figure 3
+fname=plots/mst_0125.pdf
+echo $fname
+./plot_weibull.py $dirname --xaxis sigma --normalize SRPT --shape 0.125 --nofifo --save $fname
+pdfcrop $fname
     
 echo
-echo Figure 3
+echo Figure 4
 for yaxis in load timeshape; do
     fname=plots/3d${yaxis}.pdf
     echo $fname
@@ -37,7 +43,7 @@ echo $fname
 pdfcrop $fname
 
 echo
-echo Figure 4
+echo Figure 5
 fname=plots/slowdown.pdf
 echo $fname
 ./plot_weibull_slowdown.py $dirname --shape 0.25 --xmin 0.95 --xmax 100 --ymax 1.02 --legend_loc "center right" --save $fname
@@ -48,14 +54,14 @@ echo $fname
 pdfcrop $fname
 
 echo
-echo Figure 5
+echo Figure 6
 fname=plots/size_vs_slowdown.pdf
 echo $fname
 ./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --ymax 10000000 --save $fname
 pdfcrop $fname
 
 echo
-echo Figure 6
+echo Figure 7
 fname=plots/fb_mst.pdf
 echo $fname
 ./plot_synthetic.py --tsv FB10 -dn 4 --norm SRPT --nofifo --liny --ymin 0.9 --ymax 10 --save $fname
