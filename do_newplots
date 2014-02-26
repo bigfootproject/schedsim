@@ -53,3 +53,10 @@ fname=plots/size_vs_slowdown.pdf
 echo $fname
 ./plot_weibull_size_vs_slowdown.py $dirname --shape 0.25 --xmin 0.0001 --ymin 0.9 --ymax 10000000 --save $fname
 pdfcrop $fname
+
+echo
+echo Figure 6
+fname=plots/fb_mst.pdf
+echo $fname
+./plot_synthetic.py --tsv FB10 -dn 4 --norm SRPT --nofifo --liny --ymin 0.9 --ymax 10 --save $fname
+pdfcrop $fname
