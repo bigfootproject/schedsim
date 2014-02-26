@@ -34,6 +34,8 @@ parser.add_argument('--load', type=float, default=0.9,
                     help="average load in the simulated cluster; default is "
                     "0.9. "
                     "Ignored unless --parse-swim is set")
+parser.add_argument('--nojobid', default=False, action='store_true',
+                    help="input files do not have jobids")
 args = parser.parse_args()
 
 if args.parse_swim:
@@ -41,6 +43,8 @@ if args.parse_swim:
 else:
     with open(args.file) as f:
         jobs = (line.strip().split() for line in f)
+        if args.nojobid:
+            jobs = ((i, t, size) for i, (t, size) in enumerate(jobs))
         jobs = [(jobid, float(t), float(size)) for jobid, t, size in jobs]
 
 error = simulator.lognorm_error(args.sigma)
