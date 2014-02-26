@@ -6,7 +6,7 @@ echo Figure 1
 for scheduler in SRPTE FSPE FSPE+PS; do
     fname=plots/3d${scheduler}.pdf
     echo $fname
-    ./plot3d.py $scheduler --normalize PS $dirname --notitle --zmin 0.25 --zmax 256 --save $fname
+    ./plot3d.py $scheduler --normalize PS $dirname --notitle --zmin 0.25 --zmax 128 --save $fname
     pdfcrop $fname
 done
 
@@ -15,11 +15,11 @@ echo Figure 2
 xaxis=shape
 fname=plots/${xaxis}.pdf
 echo $fname
-./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 9 --save $fname
+./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
 for xaxis in sigma load timeshape; do
     fname=plots/${xaxis}.pdf
     echo $fname
-    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 9 --save $fname --nofifo
+    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname --nofifo
     pdfcrop $fname
 done
 
