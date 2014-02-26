@@ -81,7 +81,7 @@ else:
     glob_fmt = 'results_{}_[0-9.]*.s'
     glob_str = glob_fmt.format(args.dataset)
     shelve_files = sorted((float(fname[:-2].split('_')[-1]), fname)
-                          for fname in glob(glob_str))
+                          for fname in glob.glob(glob_str))
 sigmas = [sigma for sigma, _ in shelve_files]
 
 def getmean(shelve_, scheduler):
