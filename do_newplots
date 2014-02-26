@@ -15,11 +15,11 @@ echo Figure 2
 xaxis=shape
 fname=plots/${xaxis}.pdf
 echo $fname
-./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname
+./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 9 --save $fname
 for xaxis in sigma load timeshape; do
     fname=plots/${xaxis}.pdf
     echo $fname
-    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 10 --save $fname --nofifo
+    ./plot_weibull.py $dirname --xaxis $xaxis --liny --normalize SRPT --shape 0.25 --ymin 0.9 --ymax 9 --save $fname --nofifo
     pdfcrop $fname
 done
 
@@ -64,7 +64,7 @@ echo
 echo Figure 7
 fname=plots/fb_mst.pdf
 echo $fname
-./plot_real.py --tsv FB10 -dn 4 --norm SRPT --nofifo --liny --ymin 0.9 --ymax 10 --save $fname
+./plot_real.py --tsv FB10 -dn 1 --norm SRPT --nofifo --liny --ymin 0.9 --ymax 10 --save $fname
 pdfcrop $fname
 
 echo
