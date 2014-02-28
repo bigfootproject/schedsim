@@ -24,10 +24,12 @@ for xaxis in sigma load timeshape; do
 done
 
 echo Figure 3
-fname=plots/mst_0125.pdf
-echo $fname
-./plot_weibull.py $dirname --xaxis sigma --normalize SRPT --shape 0.125 --nofifo --save $fname
-pdfcrop $fname
+for shape in 125 177; do
+    fname=plots/mst_0${sigma}.pdf
+    echo $fname
+    ./plot_weibull.py $dirname --xaxis sigma --normalize SRPT --shape 0.$shape --nofifo --save $fname
+    pdfcrop $fname
+done
     
 echo
 echo Figure 4
