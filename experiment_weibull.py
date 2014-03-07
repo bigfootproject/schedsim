@@ -14,8 +14,8 @@ import weibull_workload
 import simulator
 import schedulers
 
-parser = argparse.ArgumentParser(description="Run our experiment on "
-                                 "synthetic Weibull distributions; results "
+parser = argparse.ArgumentParser(description="Run our experiment replicating "
+                                 "settings by lu et al., "
                                  "will be stored in "
                                  "DIRNAME/res_SHAPE_SIGMA_LOAD_TIMESHAPE_NJOBS_SEED.s"
                                  )
@@ -40,6 +40,9 @@ parser.add_argument('--iterations', type=int, default=1,
                     "synthetic workload generated; default is 1")
 parser.add_argument('--est_factor', type=float,
                     help="multiply estimated size by this value")
+parser.add_argument('--normal_error', default=False, action='store_true',
+                    help="error function distributed according to a normal "
+                    "rather than a log-normal")
 parser.add_argument('--seed', type=int, help="random seed")
 args = parser.parse_args()
 
@@ -54,10 +57,12 @@ jobs = weibull_workload.workload(args.shape, args.load, args.njobs,
                                  args.timeshape)
 jobs = [(i, jobid, size) for i, (jobid, size) in enumerate(jobs)]
 
+errfunc = (simulator.normal_error if args.normal_error
+           else simulator.lognorm_error)
 if args.est_factor:
-    error = simulator.lognorm_error(args.sigma, args.est_factor)
+    error = errfunc(args.sigma, args.est_factor)
 else:
-    error = simulator.lognorm_error(args.sigma)
+    error = errfunc(args.sigma)
     
 
 instances = [
@@ -80,14 +85,17 @@ n_jobs = len(jobids)
 
 job_start = {jobid: start for jobid, start, size in jobs}
 
+
+basename = 'normal' if args.normal_error else 'res'
+
 if args.est_factor:
-    fname_mask = 'res_{}_{}_{}_{}_{}_{}_{}.s'
-    fname = fname_mask.format(args.shape, args.sigma, args.load,
+    fname_mask = '{}_{}_{}_{}_{}_{}_{}_{}.s'
+    fname = fname_mask.format(basename, args.shape, args.sigma, args.load,
                               args.timeshape, args.njobs, args.est_factor,
                               seed)
 else:
-    fname_mask = 'res_{}_{}_{}_{}_{}_{}.s'
-    fname = fname_mask.format(args.shape, args.sigma, args.load,
+    fname_mask = '{}_{}_{}_{}_{}_{}_{}.s'
+    fname = fname_mask.format(basename, args.shape, args.sigma, args.load,
                               args.timeshape, args.njobs, seed)
 final_results = shelve.open(os.path.join(args.dirname, fname))
 

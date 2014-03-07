@@ -23,7 +23,10 @@ def lognorm_error(sigma, factor=1):
 
 def normal_error(sigma, factor=1):
     def err_func(x):
-        return factor * x * rand.gauss(1, sigma)
+        while True:
+            res = factor * x * rand.gauss(1, sigma)
+            if res >= 0:
+                return res
     return err_func
 
 
