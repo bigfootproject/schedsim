@@ -14,7 +14,7 @@ from matplotlib.ticker import FuncFormatter, ScalarFormatter, AutoLocator
 
 names = ['FIFO', 'PS', 'SRPT', 'FSP', 'LAS', 'SRPTE', 'SRPTE+PS', 'SRPTE+LAS',
          'FSPE', 'FSPE+PS', 'FSPE+LAS']
-axes = 'shape sigma load timeshape njobs est_factor'.split()
+axes = 'shape loc sigma load timeshape njobs est_factor'.split()
 
 plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
 
@@ -37,6 +37,9 @@ parser.add_argument('--normalize', choices=names,
 parser.add_argument('--shape', type=float, default=0.5,
                     help="shape for job size distribution "
                     "(if not on one of the axes); default: 0.5")
+parser.add_argument('--loc', type=float, default=-1,
+                    help="loc parameter for the distribution of job size; "
+                    "default is -1")
 parser.add_argument('--sigma', type=float, default=0.5,
                     help="sigma for size estimation error log-normal "
                     "distribution (if not on one of the axes); default: 0.5")
@@ -69,11 +72,6 @@ parser.add_argument('--normal_error', default=False, action='store_true',
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
-
-
-if not args.est_factor and 'est_factor' != args.xaxis:
-    axes.pop()
-
 if args.nofifo:
     plotted.remove('FIFO')
 
@@ -81,9 +79,8 @@ xaxis_idx = axes.index(args.xaxis)
 
 fname_regex = [str(getattr(args, ax)) for ax in axes]
 fname_regex[xaxis_idx] = '[0-9.]*'
-head = 'normal' if args.normal_error else 'res'
 glob_str = os.path.join(args.dirname,
-                        '{}_{}_[0-9.]*.s'.format(head, '_'.join(fname_regex)))
+                        'lu_{}_[0-9.]*.s'.format('_'.join(fname_regex)))
 fnames = glob.glob(glob_str)
 
 cache = shelve.open(os.path.join(args.dirname, 'cache.s'))
