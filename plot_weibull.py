@@ -63,6 +63,9 @@ parser.add_argument('--nolegend', default=False, action='store_true',
                     help="don't put a legend in the plot")
 parser.add_argument('--nofifo', default=False, action='store_true',
                     help="don't plot FIFO")
+parser.add_argument('--normal_error', default=False, action='store_true',
+                    help="error function distributed according to a normal "
+                    "rather than a log-normal")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
@@ -76,8 +79,9 @@ xaxis_idx = axes.index(args.xaxis)
 
 fname_regex = [str(getattr(args, ax)) for ax in axes]
 fname_regex[xaxis_idx] = '[0-9.]*'
+head = 'normal' if args.normal_error else 'res'
 glob_str = os.path.join(args.dirname,
-                        'res_{}_[0-9.]*.s'.format('_'.join(fname_regex)))
+                        '{}_{}_[0-9.]*.s'.format(head, '_'.join(fname_regex)))
 fnames = glob.glob(glob_str)
 
 cache = shelve.open(os.path.join(args.dirname, 'cache.s'))
