@@ -81,7 +81,9 @@ fname_regex = [str(getattr(args, ax)) for ax in axes]
 fname_regex[xaxis_idx] = '[0-9.]*'
 glob_str = os.path.join(args.dirname,
                         'lu_{}_[0-9.]*.s'.format('_'.join(fname_regex)))
+print(glob_str)
 fnames = glob.glob(glob_str)
+print(fnames)
 
 cache = shelve.open(os.path.join(args.dirname, 'cache.s'))
 def getmean(fname, scheduler):
