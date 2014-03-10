@@ -34,9 +34,9 @@ parser.add_argument('--liny', default=False, action='store_true',
                     help='linear (instead of logarithmic) y axis')
 parser.add_argument('--normalize', choices=names,
                     help="normalize against another scheduler")
-parser.add_argument('--shape', type=float, default=0.5,
+parser.add_argument('--shape', type=float, default=2,
                     help="shape for job size distribution "
-                    "(if not on one of the axes); default: 0.5")
+                    "(if not on one of the axes); default: 2")
 parser.add_argument('--loc', type=float, default=-1,
                     help="loc parameter for the distribution of job size; "
                     "default is -1")
