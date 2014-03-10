@@ -39,6 +39,8 @@ parser.add_argument('--paper', dest='for_paper', action='store_const',
                     const=True, default=False, help="render plots with "
                     "LaTeX and output them as "
                     "sojourn-vs-error_DATASET_SIGMA_D-OVER-N.pdf")
+parser.add_argument('--nojobid', default=False, action='store_true',
+                    help="input files do not have jobids")
 args = parser.parse_args()
 
 if args.for_paper:
@@ -59,6 +61,8 @@ if args.tsv:
 else:
     with open(args.dataset) as f:
         workload = (line.strip().split() for line in f)
+        if args.nojobid:
+            workload = ((i, t, size) for i, (t, size) in enumerate(workload))
         workload = [(jobid, float(t), float(size))
                     for jobid, t, size in workload]
 
