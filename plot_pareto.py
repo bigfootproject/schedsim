@@ -50,7 +50,7 @@ parser.add_argument('--timeshape', type=float, default=1,
                     "inter-arrival times; default: 1 (i.e. exponential)")
 parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
-parser.add_argument('--est_factor', type=float,
+parser.add_argument('--est_factor', type=float, default=1,
                     help="multiply estimated size by this value")
 parser.add_argument('--nolatex', default=False, action='store_true',
                     help="disable LaTeX rendering")
@@ -81,9 +81,7 @@ fname_regex = [str(getattr(args, ax)) for ax in axes]
 fname_regex[xaxis_idx] = '[0-9.]*'
 glob_str = os.path.join(args.dirname,
                         'lu_{}_[0-9.]*.s'.format('_'.join(fname_regex)))
-print(glob_str)
 fnames = glob.glob(glob_str)
-print(fnames)
 
 cache = shelve.open(os.path.join(args.dirname, 'cache.s'))
 def getmean(fname, scheduler):
