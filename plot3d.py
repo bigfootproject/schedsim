@@ -169,13 +169,28 @@ if not args.linz:
 if not args.notitle:
     plt.title(args.scheduler)
 if args.normalize:
-    ax.contour(X, Y, Z, levels=[0], colors=['k'], linewidths=10)
     if args.linz:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
-                               alpha=0.8)
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               vmin=-2, vmax=2, alpha=0.8)
+                               vmin=-2, vmax=2)
+    cont = ax.contour(X, Y, Z, levels=[0], colors='k', linewidths=5,
+                      linestyles='dashed')
+
+    # Horrible hack to get the last line always rendered
+    # http://stackoverflow.com/questions/20781859/drawing-a-line-on-a-3d-plot-in-matplotlib
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection
+    class FixZorderCollection(Line3DCollection):
+        _zorder = 1000
+
+        @property
+        def zorder(self):
+            return self._zorder
+
+        @zorder.setter
+        def zorder(self, value):
+            pass
+    ax.collections[-1].__class__ = FixZorderCollection
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
 if args.zmin:
