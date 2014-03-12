@@ -173,8 +173,8 @@ if args.normalize:
     if args.linz:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
     else:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.YlOrRd,
-                               vmin=0, vmax=5)
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Reds,
+                               vmin=0, vmax=6)
     cont = ax.contour(X, Y, Z, levels=[0], colors='k', linewidths=5,
                       linestyles='dashed')
 
