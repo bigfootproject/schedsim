@@ -169,11 +169,14 @@ if not args.linz:
 if not args.notitle:
     plt.title(args.scheduler)
 if args.normalize:
+    ax.contour(X, Y, Z, levels=[0], colors=['k'], linewidths=5,
+               linestyles='dashed')
     if args.linz:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens,
+                               alpha=0.8)
     else:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               vmin=-2, vmax=2)
+                               vmin=-2, vmax=2, alpha=0.8)
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
 if args.zmin:
