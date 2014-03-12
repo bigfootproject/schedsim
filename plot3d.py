@@ -12,6 +12,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, LogLocator
 from matplotlib import cm
+from matplotlib import colors
 from mpl_toolkits.mplot3d import Axes3D
 
 import plot_helpers
@@ -172,25 +173,25 @@ if args.normalize:
     if args.linz:
         surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
     else:
-        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bwr,
-                               vmin=-2, vmax=2)
-    cont = ax.contour(X, Y, Z, levels=[0], colors='k', linewidths=5,
-                      linestyles='dashed')
+        surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Reds,
+                               vmin=0, vmax=5)
+    # cont = ax.contour(X, Y, Z, levels=[0], colors='k', linewidths=5,
+    #                   linestyles='dashed')
 
-    # Horrible hack to get the last line always rendered
-    # http://stackoverflow.com/questions/20781859/drawing-a-line-on-a-3d-plot-in-matplotlib
-    from mpl_toolkits.mplot3d.art3d import Line3DCollection
-    class FixZorderCollection(Line3DCollection):
-        _zorder = 1000
+    # # Horrible hack to get the last line always rendered
+    # # http://stackoverflow.com/questions/20781859/drawing-a-line-on-a-3d-plot-in-matplotlib
+    # from mpl_toolkits.mplot3d.art3d import Line3DCollection
+    # class FixZorderCollection(Line3DCollection):
+    #     _zorder = 1000
 
-        @property
-        def zorder(self):
-            return self._zorder
+    #     @property
+    #     def zorder(self):
+    #         return self._zorder
 
-        @zorder.setter
-        def zorder(self, value):
-            pass
-    ax.collections[-1].__class__ = FixZorderCollection
+    #     @zorder.setter
+    #     def zorder(self, value):
+    #         pass
+    # ax.collections[-1].__class__ = FixZorderCollection
 else:
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.Greens)
 if args.zmin:
