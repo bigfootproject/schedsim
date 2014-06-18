@@ -772,9 +772,6 @@ class WFQE_GPS(Scheduler):
         
         delta = t - self.last_t
 
-        if delta <= 0:
-            return
-
         virtual_w = self.virtual_w
 
         if self.virtual_w > 0:
