@@ -807,7 +807,7 @@ class WFQE_GPS(Scheduler):
             
         self.last_t = t
 
-    def _schedule(self, t):
+    def schedule(self, t):
 
         self.update(t)
 
@@ -825,12 +825,6 @@ class WFQE_GPS(Scheduler):
         while queue[0][1] not in running:
             heappush(early, heappop(queue))
         return {queue[0][1]: 1}
-
-    def schedule(self, t):
-
-        res = self._schedule(t)
-        print(t, res)
-        return res
 
     def next_internal_event(self):
 
