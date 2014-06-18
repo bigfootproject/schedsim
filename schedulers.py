@@ -40,8 +40,8 @@ class PS(Scheduler):
 
 
 class FIFO(Scheduler):
-    def __init__(self):
-        self.jobs = deque()
+    def __init__(self): 
+       self.jobs = deque()
 
     def enqueue(self, t, jobid, size):
         self.jobs.append(jobid)
@@ -285,6 +285,26 @@ class FSP_plus_PS(FSP):
         return {jobid: 1}
 
 
+class FSPE_PS_DC(FSP_plus_PS):
+
+    def schedule(self, t):
+
+        self.update(t)
+        queue = self.queue
+        running = self.running
+        scheduled = set(self.late)
+        try:
+            scheduled.add(next(jobid for _, jobid in self.queue
+                               if jobid in running))
+        except StopIteration:
+            pass
+        if scheduled:
+            share = 1 / len(scheduled)
+            return {jobid: share for jobid in scheduled}
+        else:
+            return {}
+
+    
 class LAS(Scheduler):
 
     def __init__(self, eps=1e-6):
@@ -533,7 +553,7 @@ class SRPT_plus_LAS(Scheduler):
         if queue:
             return queue[0][0] * (len(self.late) + 1) * self.eps
 
-
+        
 class FSP_plus_LAS(Scheduler):
 
     def __init__(self, eps=1e-6):
@@ -693,3 +713,245 @@ class FSP_plus_LAS(Scheduler):
             if not res or res > delta:
                 res = delta
         return res
+
+    
+class WFQE_GPS(Scheduler):
+    
+    def __init__(self, eps=1e-6):
+        # heap of (gtime, jobid) for the virtual time
+        self.queue = []
+
+        # heap of (gtime, jobid) for jobs that are in the virtual
+        # time, done in the real time and were at the head of
+        # self.queue
+        self.early = []
+
+        # time allotted to the "ghost job"
+        self.gtime = 0
+
+        # {jobid: weight} for jobs that are finished in the virtual
+        # time, but not in the real (happens only in case of
+        # estimation errors)
+        self.late = {}
+
+        # last time we run the update method
+        self.last_t = 0
+
+        # Jobs that are running in the real time
+        self.running = set()
+
+        # Jobs that have less than eps work to do in virtual time are
+        # considered done (deals with floating point imprecision)
+        self.eps = eps
+
+        # equivalent to sum(late.values())
+        self.late_w = 0
+
+        # equivalent to sum(w for _, _, w in queue + early)
+        self.virtual_w = 0
+
+    def enqueue(self, t, jobid, size, w=1):
+
+        if w <= 0:
+            raise ValueError("w needs to be positive")
+        
+        self.update(t) # we need to age only existing jobs in the virtual queue
+        heappush(self.queue, (self.gtime + size / w, jobid, w))
+        self.virtual_w += w
+        self.running.add(jobid)
+
+    def dequeue(self, t, jobid):
+        # job remains in the virtual time!
+        self.running.remove(jobid)
+        late = self.late
+        if jobid in self.late:
+            self.late_w -= late[jobid]
+            del late[jobid]
+
+    def update(self, t):
+        
+        delta = t - self.last_t
+
+        if delta <= 0:
+            return
+
+        virtual_w = self.virtual_w
+
+        if self.virtual_w > 0:
+            queue = self.queue
+            early = self.early
+            running = self.running
+            late = self.late
+            
+            fair_share = delta / virtual_w
+
+            self.gtime = gtime = self.gtime + fair_share
+            gtime_plus_eps = gtime + self.eps
+
+            # deal with jobs that are done in the virtual scheduler
+            while queue and queue[0][0] < gtime_plus_eps:
+                _, jobid, w = heappop(queue)
+                self.virtual_w -= w
+                if jobid in running:
+                    late[jobid] = w
+                    self.late_w += w
+            while early and early[0][0] < gtime_plus_eps:
+                _, _, w = heappop(early)
+                self.virtual_w -= w
+
+            # reset to avoid precision erros due to floating point
+            if not queue and not early:
+                self.virtual_w = 0
+            else:
+                assert self.virtual_w > 0
+            
+        self.last_t = t
+
+    def _schedule(self, t):
+
+        self.update(t)
+
+        late = self.late
+        if late:
+            late_w = self.late_w
+            return {jobid: w / late_w for jobid, w in late.items()}
+
+        running = self.running
+        if not running:
+            return {}
+
+        queue = self.queue
+        early = self.early
+        while queue[0][1] not in running:
+            heappush(early, heappop(queue))
+        return {queue[0][1]: 1}
+
+    def schedule(self, t):
+
+        res = self._schedule(t)
+        print(t, res)
+        return res
+
+    def next_internal_event(self):
+
+        virtual_w = self.virtual_w
+        if virtual_w == 0:
+            return None
+
+        queue = self.queue
+        early = self.early
+        if queue:
+            if early:
+                v = min(queue[0][0], early[0][0])
+            else:
+                v = queue[0][0]
+        else:
+            v = early[0][0]
+
+        return (v - self.gtime) * self.virtual_w
+    
+class LogFSP_plus_PS(Scheduler):
+
+    def __init__(self, eps=1e-6):
+
+        # [ghost_time, jobid] heaps for the *virtual* scheduler
+        self.queue = []
+
+        # [ghost_time, jobid] for jobs that have ended before they complete in the virtual queue
+        # (only for those that would be otherwise in front of the 'main' queue)
+        self.early = []
+
+        # work devoted to the "ghost job"
+        self.ghost_time = 0
+
+        # Jobs that should have finished in the virtual time,
+        # but didn't in the real (happens only in case of estimation
+        # errors)
+        self.late = set()
+
+        # last time we run the schedule function
+        self.last_t = 0
+
+        # Jobs that are running in the real time
+        self.running = set()
+
+        # Jobs that have less than eps work to do are considered done
+        # (deals with floating point imprecision)
+        self.eps = eps
+
+    def enqueue(self, t, jobid, size):
+        self.update(t)  # needed to age only existing jobs in the virtual queue
+        heappush(self.queue, (self.ghost_time + size, jobid))
+        self.running.add(jobid)
+
+    def dequeue(self, t, jobid):
+        # the job remains in the virtual scheduler!
+        self.running.remove(jobid)
+        self.late.discard(jobid)
+
+    def update(self, t):
+
+        delta = t - self.last_t
+
+        if delta <= 0:
+            return
+
+        queue = self.queue
+        early = self.early
+        l = len(queue) + len(early)
+
+        if l > 0:
+            running = self.running
+            late = self.late
+            
+            fair_share = delta / l
+
+            self.ghost_time = ghost_time = self.ghost_time + fair_share
+            ghost_plus_eps = ghost_time + self.eps
+
+            # deal with jobs that are done in the virtual scheduler
+            while queue and queue[0][0] < ghost_plus_eps:
+                _, jobid = heappop(queue)
+                if jobid in running:
+                    late.add(jobid)
+            while early and early[0][0] < ghost_plus_eps:
+                heappop(early)
+            
+        self.last_t = t
+
+    def schedule(self, t):
+
+        self.update(t)
+
+        late = self.late
+        if late:
+            share = 1 / len(late)
+            return {jobid: share for jobid in late}
+
+        running = self.running
+        if not running:
+            return {}
+
+        early = self.early
+        while queue[0][1] not in running:
+            heappush(early, heappop(queue))
+        return {queue[0][1]: 1}
+
+    def next_internal_event(self):
+
+        queue = self.queue
+        early = self.early
+        l = len(queue) + len(early)
+
+        if l == 0:
+            return None
+
+        if queue:
+            if early:
+                v = min(queue[0][0], early[0][0])
+            else:
+                v = queue[0][0]
+        else:
+            v = early[0][0]
+
+        return v * l
