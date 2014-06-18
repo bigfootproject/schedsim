@@ -50,10 +50,10 @@ instances = [
     ('SRPTPS', schedulers.SRPT_plus_PS),
     ('FSP', schedulers.FSP),
     ('FSP+PS', schedulers.FSP_plus_PS),
-#    ('LAS', schedulers.LAS),
-#    ('FSP+LAS', schedulers.FSP_plus_LAS),
-#    ('SRPTLAS', schedulers.SRPT_plus_LAS),
-    ('WFQEGPS', schedulers.WFQE_GPS)
+    ('LAS', schedulers.LAS),
+    ('FSP+LAS', schedulers.FSP_plus_LAS),
+    ('SRPTLAS', schedulers.SRPT_plus_LAS),
+    ('WFQEGPS', schedulers.WFQE_GPS),
 ]
 
 results = {}
