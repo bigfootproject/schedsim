@@ -38,7 +38,8 @@ def fixed_estimations(estimations):
     return err_func
 
 
-def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
+def simulator(jobs, scheduler_factory=schedulers.PS,
+              size_estimation=identity, priorities=None):
 
     events = [(t, ARRIVAL, (jobid, size)) for jobid, t, size in jobs]
     heapify(events)  # not needed if jobs are sorted by arrival time
@@ -48,6 +49,14 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
     scheduler = scheduler_factory()
 
     last_t = 0
+
+    if priorities is not None:
+        def enqueue(t, jobid, size):
+            scheduler.enqueue(t, jobid, size, priorities[jobid])
+    else:
+        def enqueue(t, jobid, size):
+            scheduler.enqueue(t, jobid, size)
+        
 
     while events:  # main loop
 
@@ -66,7 +75,7 @@ def simulator(jobs, scheduler_factory=schedulers.PS, size_estimation=identity):
         if event_type == ARRIVAL:
             jobid, size = event_data
             remaining[jobid] = size
-            scheduler.enqueue(t, jobid, size_estimation(size))
+            enqueue(t, jobid, size_estimation(size))
         elif event_type == COMPLETE:
             jobid = event_data
             #assert -eps <= remaining[jobid] <= eps

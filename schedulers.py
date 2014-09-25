@@ -8,7 +8,6 @@ from math import ceil
 
 from blist import blist, sorteddict, sortedlist
 
-
 def intceil(x):  # superfluous in Python 3, ceil is sufficient
     return int(ceil(x))
 
@@ -840,3 +839,76 @@ class WFQE_GPS(Scheduler):
             v = early[0][0]
 
         return (v - self.gtime) * self.virtual_w
+
+class FSPE_PS(WFQE_GPS):
+    def enqueue(self, t, jobid, size, w=None):
+        super(FSPE_PS, self).enqueue(t, jobid, size, 1)
+
+class WSRPTE_GPS(Scheduler):
+
+    def __init__(self, eps=1e-6):
+        self.jobs = []
+        self.last_t = 0
+        self.late = {}
+        self.late_w = 0
+        self.eps = eps
+
+    def update(self, t):
+        delta = t - self.last_t
+        jobs = self.jobs
+        if jobs:
+            rpt_over_w, w, _ = jobs[0]
+            work = delta / (w + self.late_w)
+            jobs[0][0] -= work / w
+            while jobs and jobs[0][0] < self.eps:
+                _, w, jobid = heappop(jobs)
+                self.late[jobid] = w
+                self.late_w += w
+        self.last_t = t
+
+    def next_internal_event(self):
+        jobs = self.jobs
+        if not jobs:
+            return None
+        rpt_over_w, w, _ = jobs[0]
+        return rpt_over_w * w * w / (w + self.late_w) # = rpt * w / (w + late_w)
+
+    def schedule(self, t):
+        self.update(t)
+        jobs = self.jobs
+        tot_w = self.late_w
+        if jobs:
+            _, w, jobid = jobs[0]
+            tot_w += w
+            schedule = {jobid: w / tot_w}
+        else:
+            schedule = {}
+        for jobid, w in self.late.items():
+            schedule[jobid] = w / tot_w
+        return schedule
+
+    def enqueue(self, t, jobid, job_size, w=1):
+        self.update(t)
+        heappush(self.jobs, [job_size / w, w, jobid])
+
+    def dequeue(self, t, jobid):
+        self.update(t)
+        late = self.late
+        if jobid in late:
+            del late[jobid]
+            return
+        # common case: we dequeue the running job
+        jobs = self.jobs
+        if jobid == jobs[0][2]:
+            heappop(jobs)
+            return
+        # we still care if we dequeue a job not running (O(n)) --
+        # could be made more efficient, but still O(n) because of the
+        # search, by exploiting heap properties (i.e., local heappop)
+        try:
+            idx = next(i for i, v in jobs if v[2] == jobid)
+        except StopIteration:
+            raise ValueError("dequeuing missing job")
+        jobs[idx], jobs[-1] = jobs[-1], jobs[idx]
+        jobs.pop()
+        heapify(jobs)
