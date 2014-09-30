@@ -37,6 +37,26 @@ class PS(Scheduler):
         else:
             return {}
 
+class GPS(Scheduler):
+    def __init__(self):
+        self.running = {}
+
+    def enqueue(self, t, jobid, size, priority=1):
+        self.running[jobid] = priority
+
+    def dequeue(self, t, jobid):
+        try:
+            del self.running[jobid]
+        except KeyError:
+            raise ValueError("dequeuing missing job")
+
+    def schedule(self, t):
+        running = self.running
+        if running:
+            share = 1 / sum(running.values())
+            return {jobid: weight * share for jobid, weight in running.items()}
+        else:
+            return {}
 
 class FIFO(Scheduler):
     def __init__(self): 

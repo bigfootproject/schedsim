@@ -31,7 +31,12 @@ def workload(shape, load, n, time_shape=1, seed=None):
     stretch_factor = totsize / (jobs[-1][0] * load)
 
     return [(t * stretch_factor, size) for t, size in jobs]
-    
+
+def workload_priorities(shape, load, n, time_shape=1, seed=None,
+                             nclasses=5):
+    wl = workload(shape, load, n, time_shape, seed)
+    pri = [random.randint(1, nclasses) for _ in range(n)]
+    return wl, pri
         
 def main():
     import argparse
