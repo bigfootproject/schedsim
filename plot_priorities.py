@@ -41,16 +41,13 @@ parser.add_argument('--njobs', type=int, default=10000,
                     help="number of jobs in the workload; default: 10000")
 parser.add_argument('--est_factor', type=float, default=1.0,
                     help="multiply estimated size by this value")
-parser.add_argument('--alpha', type=float, default=1.0,
-                    help="priority class x gets a weight of x**(-alpha); "
-                    "default: 1")
 parser.add_argument('--nolatex', default=False, action='store_true',
                     help="disable LaTeX rendering")
-parser.add_argument('--xmin', type=float,
+parser.add_argument('--xmin', type=float, default=0.95,
                     help="minimum value on the x axis")
-parser.add_argument('--xmax', type=float,
+parser.add_argument('--xmax', type=float, default=5.05,
                     help="maximum value on the x axis")
-parser.add_argument('--ymin', type=float,
+parser.add_argument('--ymin', type=float, default=1,
                     help="minimum value on the y axis")
 parser.add_argument('--ymax', type=float,
                     help="maximum value on the y axis")
@@ -64,46 +61,50 @@ args = parser.parse_args()
 
 fname_regex = '_'.join(str(getattr(args, param))
                        for param in
-                       'shape sigma load timeshape njobs est_factor alpha'.split())
+                       'shape sigma load timeshape njobs est_factor'.split())
 head = 'pri_normal' if args.normal_error else 'pri'
 glob_str = os.path.join(args.dirname,
-                        '{}_{}_[0-9.]*.s'.format(head, fname_regex))
+                        '{}_{}_[0-9.]*_[0-9.]*.s'.format(head, fname_regex))
 fnames = glob.glob(glob_str)
+
+def get_basename(fname):
+    return os.path.splitext(os.path.split(fname)[1])[0]
 
 cache = shelve.open(os.path.join(args.dirname, 'pri_cache.s'))
 def getmeans(fname, scheduler):
-    print(fname, scheduler)
-    basename = os.path.splitext(os.path.split(fname)[1])[0]
+    basename = get_basename(fname)
     key = '{}_mean_{}'.format(basename, scheduler)
     try:
         return cache[key]
     except KeyError:
-        print('cache miss')
         shelve_ = shelve.open(fname, 'r')
         seed = int(basename.split('_')[-1])
         _, priorities = weibull_workload.workload_priorities(
             args.shape, args.load, args.njobs, args.timeshape, seed)
         sojourns = collections.defaultdict(list)
-        for results in shelve_[scheduler]:
+        for results in shelve_.get(scheduler, []):
             for sojourn, pri in zip(results, priorities):
                 sojourns[pri].append(sojourn)
         means = {pri: np.array(s).mean() for pri, s in sojourns.items()}
         shelve_.close()
         cache[key] = means
-        print('means:', means)
         return means
 
-results = collections.defaultdict(lambda: collections.defaultdict(list))
+# results[alpha][scheduler][priority] = list of MSTs per experiment
+results = collections.defaultdict(lambda:
+              collections.defaultdict(lambda:
+                  collections.defaultdict(list)))
 for fname in fnames:
     print('.', end='', flush=True)
     for scheduler in plotted:
+        alpha = float(get_basename(fname).split('_')[-2])
 #        try:
         means = getmeans(fname, scheduler)
 #        except:
             # the file is being written now
 #            continue
         for pri, mst in means.items():
-            results[scheduler][pri].append(mst)
+            results[alpha][scheduler][pri].append(mst)
 cache.close()
 
 print()
@@ -112,12 +113,15 @@ fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
 ax.set_xlabel("Priority")
 ax.set_ylabel("Mean sojourn time")
-for scheduler in plotted:
-    sched_results = sorted(results[scheduler].items())
-    xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
+for alpha, alpha_results in sorted(results.items()):
     style = next(styles)
-    ax.plot(xs, ys, style, label=scheduler, linewidth=2, markersize=10,
-            color=colors[scheduler])
+    for scheduler in plotted:
+        sched_results = sorted(alpha_results[scheduler].items())
+        xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
+        label = r"{}, $\alpha={}$".format(scheduler, alpha)
+        ax.plot(xs, ys, style + markers[scheduler],
+                label=label, linewidth=2, markersize=10,
+                color=colors[scheduler])
 
 if not args.nolegend:
     ax.legend(loc=0, ncol=2)
@@ -125,15 +129,9 @@ if not args.nolegend:
 ax.tick_params(axis='x', pad=7)
 
 ax.yaxis.set_major_formatter(ScalarFormatter())
-
-minvs = min(min(vs) for vs in results.values())
-maxvs = max(max(vs) for vs in results.values())
-
-ax.set_xlim(args.xmin if args.xmin is not None else minvs,
-            args.xmax if args.xmax is not None else maxvs)
-
-if args.ymin is not None:
-    ax.set_ylim(bottom=args.ymin)
+ax.set_xlim(left=args.xmin)
+ax.set_xlim(right=args.xmax)
+ax.set_ylim(bottom=args.ymin)
 if args.ymax is not None:
     ax.set_ylim(top=args.ymax)
 
@@ -141,6 +139,7 @@ if not args.nolatex:
     import plot_helpers
     plot_helpers.config_paper(20)
 
+ax.grid()
 plt.tight_layout(1)
 
 if args.save is not None:

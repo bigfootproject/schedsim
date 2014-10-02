@@ -18,10 +18,11 @@ parser = argparse.ArgumentParser(description="Experiment on synthetic "
                                  "results will be stored in "
                                  "DIRNAME/pri_SHAPE_SIGMA_LOAD_TIMESHAPE_NJOBS_SEED.s"
                                  )
-parser.add_argument('shape', type=float,
-                    help="shape parameter for the distribution of job size; "
-                    "the scale parameter is set to ensure mean=1")
 parser.add_argument('dirname', help="directory in which to store results")
+parser.add_argument('--shape', type=float, default=0.25,
+                    help="shape parameter for the distribution of job size; "
+                    "the scale parameter is set to ensure mean=1; "
+                    "default is 0.25")
 parser.add_argument('--sigma', type=float, default=0.5,
                     help="sigma parameter for the log-normal error function; "
                     "default is 0.5")
