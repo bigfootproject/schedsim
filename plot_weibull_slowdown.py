@@ -26,14 +26,13 @@ colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
 
 parser = argparse.ArgumentParser(description="plot CDF of slowdown")
 parser.add_argument('dirname', help="directory in which results are stored")
-parser.add_argument('--shape', type=float, default=0.5,
-                    help="shape for job size distribution "
-                    "(if not on one of the axes); default: 0.5")
+parser.add_argument('--shape', type=float, default=0.25,
+                    help="shape for job size distribution; default: 0.25")
 parser.add_argument('--sigma', type=float, default=0.5,
                     help="sigma for size estimation error log-normal "
-                    "distribution (if not on one of the axes); default: 0.5")
+                    "distribution; default: 0.5")
 parser.add_argument('--load', type=float, default=0.9,
-                    help="load for the generated workload; default: 0.99")
+                    help="load for the generated workload; default: 0.9")
 parser.add_argument('--timeshape', type=float, default=1,
                     help="shape for the Weibull distribution of job "
                     "inter-arrival times; default: 1 (i.e. exponential)")
