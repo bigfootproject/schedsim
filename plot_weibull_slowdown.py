@@ -16,14 +16,6 @@ import weibull_workload
 
 axes = 'shape sigma load timeshape njobs'.split()
 
-plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
-
-styles = {'FIFO': ':', 'PS': '-', 'LAS': '--',
-          'SRPTE': '--', 'FSPE': ':', 'FSPE+PS': '-'}
-
-colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
-          'SRPTE': 'r', 'FSPE': 'r', 'FSPE+PS': 'r'}        
-
 parser = argparse.ArgumentParser(description="plot CDF of slowdown")
 parser.add_argument('dirname', help="directory in which results are stored")
 parser.add_argument('--shape', type=float, default=0.25,
@@ -55,8 +47,25 @@ parser.add_argument('--legend_loc', default=0,
 parser.add_argument('--normal_error', default=False, action='store_true',
                     help="error function distributed according to a normal "
                     "rather than a log-normal")
+parser.add_argument('--alt_schedulers', default=False, action='store_true',
+                     help="plot schedulers that are variants of FSPE+PS")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
+
+if args.alt_schedulers:
+    plotted = 'FSPE+PS FSPE+LAS SRPTE+PS SRPTE+LAS'.split()
+    styles = {'FSPE+PS': '-', 'FSPE+LAS': '--',
+              'SRPTE+PS': ':', 'SRPTE+LAS': '-.'}
+    colors = {'FSPE+PS': 'r', 'FSPE+LAS': 'r',
+              'SRPTE+PS': 'r', 'SRPTE+LAS': 'r'}
+else:
+    plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
+    styles = {'FIFO': ':', 'PS': '-', 'LAS': '--',
+              'SRPTE': '--', 'FSPE': ':', 'FSPE+PS': '-'}
+    colors = {'FIFO': '0.6', 'PS': '0.6', 'LAS': '0.6',
+              'SRPTE': 'r', 'FSPE': 'r', 'FSPE+PS': 'r'}        
+
+
 
 fname_regex = [str(getattr(args, ax)) for ax in axes]
 head = 'normal' if args.normal_error else 'res'
