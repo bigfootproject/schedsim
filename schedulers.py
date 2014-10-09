@@ -734,13 +734,13 @@ class FSP_plus_LAS(Scheduler):
         return res
 
     
-class WFQE_GPS(Scheduler):
+class PSBS(Scheduler):
     
     def __init__(self, eps=1e-6):
-        # heap of (gtime, jobid) for the virtual time
+        # heap of (gtime, jobid, weight) for the virtual time
         self.queue = []
 
-        # heap of (gtime, jobid) for jobs that are in the virtual
+        # heap of (gtime, jobid, weight) for jobs that are in the virtual
         # time, done in the real time and were at the head of
         # self.queue
         self.early = []
@@ -860,6 +860,8 @@ class WFQE_GPS(Scheduler):
 
         return (v - self.gtime) * self.virtual_w
 
+WFQE_GPS = PSBS
+    
 class FSPE_PS(WFQE_GPS):
     def enqueue(self, t, jobid, size, w=None):
         super(FSPE_PS, self).enqueue(t, jobid, size, 1)
