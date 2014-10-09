@@ -144,7 +144,8 @@ for scheduler in plotted:
             plotfun = ax.semilogx
         else:
             plotfun = ax.loglog
-    plotfun(xs, ys, style, label=scheduler, linewidth=2, markersize=10,
+    label = 'PSBS' if scheduler == 'FSPE+PS' else scheduler
+    plotfun(xs, ys, style, label=label, linewidth=2, markersize=10,
             color=colors[scheduler])
 
 if not args.nolegend:

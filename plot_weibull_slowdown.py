@@ -113,7 +113,8 @@ for scheduler in plotted:
                           100).astype(int)
     xs = [slowdowns[idx] for idx in indexes]
     style = styles[scheduler]
-    ax.semilogx(xs, ys, style, label=scheduler, linewidth=4,
+    label = 'PSBS' if scheduler == 'FSPE+PS' else scheduler
+    ax.semilogx(xs, ys, style, label=label, linewidth=4,
                 color=colors[scheduler])
 
 if not args.nolegend:

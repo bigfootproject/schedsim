@@ -97,7 +97,8 @@ for scheduler in plotted:
     xs, ys = zip(*(pairs[ileft:iright].mean(0)
                    for ileft, iright in zip(indexes[:-1], indexes[1:])))
     style = styles[scheduler]
-    ax.loglog(xs, ys, style, label=scheduler, linewidth=3,
+    label = 'PSBS' if scheduler == 'FSPE+PS' else scheduler
+    ax.loglog(xs, ys, style, label=label, linewidth=3,
               color=colors[scheduler])
 
 if not args.nolegend:
