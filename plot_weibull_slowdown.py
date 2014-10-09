@@ -53,11 +53,13 @@ parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
 if args.alt_schedulers:
-    plotted = 'FSPE+PS FSPE+LAS SRPTE+PS SRPTE+LAS'.split()
+    plotted = 'FSPE+PS FSPE+LAS SRPTE+PS SRPTE+LAS PS'.split()
     styles = {'FSPE+PS': '-', 'FSPE+LAS': '--',
-              'SRPTE+PS': ':', 'SRPTE+LAS': '-.'}
+              'SRPTE+PS': ':', 'SRPTE+LAS': '-.',
+              'PS': '-'}
     colors = {'FSPE+PS': 'r', 'FSPE+LAS': 'r',
-              'SRPTE+PS': 'r', 'SRPTE+LAS': 'r'}
+              'SRPTE+PS': 'r', 'SRPTE+LAS': 'r',
+              'PS': '0.6'}
 else:
     plotted = 'SRPTE FSPE FSPE+PS PS LAS FIFO'.split()
     styles = {'FIFO': ':', 'PS': '-', 'LAS': '--',
