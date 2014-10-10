@@ -10,6 +10,7 @@ import shelve
 import os.path
 
 import numpy as np
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter, ScalarFormatter, AutoLocator
 
@@ -19,9 +20,17 @@ names = ['WFQE+GPS', 'GPS']
 
 plotted = 'WFQE+GPS GPS'.split()
 
-styles = itertools.cycle('- -- :'.split())
+styles = itertools.cycle('- -- : -.'.split())
 markers = {'WFQE+GPS': 'x', 'GPS': '+'}
 colors = {'WFQE+GPS': 'r', 'GPS': '0.6'}
+
+sched_handles, sched_labels = [], []
+for name in names:
+    label = 'PSBS' if name == 'WFQE+GPS' else name
+    sched_handles.append(mlines.Line2D([], [], marker=markers[name],
+                                       color=colors[name], linewidth=2,
+                                       markersize=10))
+    sched_labels.append(label)
 
 parser = argparse.ArgumentParser(description="plot of mean sojourn time vs. "
                                              "priorities")
@@ -113,18 +122,22 @@ fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
 ax.set_xlabel("Priority")
 ax.set_ylabel("Mean sojourn time")
+alpha_handles, alpha_labels = [], []
 for alpha, alpha_results in sorted(results.items()):
     style = next(styles)
+    alpha_handles.append(mlines.Line2D([], [], linestyle=style, color='k',
+                                       linewidth=2))
+    alpha_labels.append(r'$\alpha={}$'.format(alpha))
     for scheduler in plotted:
         sched_results = sorted(alpha_results[scheduler].items())
         xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
         label = r"{}, $\alpha={}$".format(scheduler, alpha)
-        ax.plot(xs, ys, style + markers[scheduler],
-                label=label, linewidth=2, markersize=10,
-                color=colors[scheduler])
+        ax.plot(xs, ys, linestyle=style, marker=markers[scheduler],
+                linewidth=2, markersize=10, color=colors[scheduler])
 
 if not args.nolegend:
-    ax.legend(loc=0, ncol=2)
+    ax.legend(alpha_handles + sched_handles, alpha_labels + sched_labels,
+              loc=0, ncol=2)
     
 ax.tick_params(axis='x', pad=7)
 
