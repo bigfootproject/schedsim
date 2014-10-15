@@ -122,7 +122,7 @@ print()
 
 fig = plt.figure(figsize=(8, 4.5))
 ax = fig.add_subplot(111)
-ax.set_xlabel("Priority")
+ax.set_xlabel("Weight class")
 ax.set_ylabel("Mean sojourn time")
 alpha_handles, alpha_labels = [], []
 for alpha, alpha_results in sorted(results.items()):
