@@ -65,6 +65,8 @@ parser.add_argument('--nolegend', default=False, action='store_true',
 parser.add_argument('--normal_error', default=False, action='store_true',
                     help="error function distributed according to a normal "
                     "rather than a log-normal")
+parser.add_argument('--alpha_label', default=r'\alpha',
+                    help="name for the alpha parameter in the label")
 parser.add_argument('--save', help="don't show but save in target filename")
 args = parser.parse_args()
 
@@ -127,7 +129,7 @@ for alpha, alpha_results in sorted(results.items()):
     style = next(styles)
     alpha_handles.append(mlines.Line2D([], [], linestyle=style, color='k',
                                        linewidth=2))
-    alpha_labels.append(r'$\alpha={}$'.format(alpha))
+    alpha_labels.append(r'${}={}$'.format(args.alpha_label, alpha))
     for scheduler in plotted:
         sched_results = sorted(alpha_results[scheduler].items())
         xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
