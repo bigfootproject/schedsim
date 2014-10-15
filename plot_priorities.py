@@ -131,7 +131,6 @@ for alpha, alpha_results in sorted(results.items()):
     for scheduler in plotted:
         sched_results = sorted(alpha_results[scheduler].items())
         xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
-        label = r"{}, $\alpha={}$".format(scheduler, alpha)
         ax.plot(xs, ys, linestyle=style, marker=markers[scheduler],
                 linewidth=2, markersize=10, color=colors[scheduler])
 
