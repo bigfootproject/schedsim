@@ -29,7 +29,7 @@ for name in names:
     label = 'PSBS' if name == 'WFQE+GPS' else name
     sched_handles.append(mlines.Line2D([], [], marker=markers[name],
                                        color=colors[name], linewidth=2,
-                                       markersize=10))
+                                       mew=2, markersize=15))
     sched_labels.append(label)
 
 parser = argparse.ArgumentParser(description="plot of mean sojourn time vs. "
@@ -134,7 +134,7 @@ for alpha, alpha_results in sorted(results.items()):
         sched_results = sorted(alpha_results[scheduler].items())
         xs, ys = zip(*[(x, sum(ys) / len(ys)) for x, ys in sched_results])
         ax.plot(xs, ys, linestyle=style, marker=markers[scheduler],
-                linewidth=2, markersize=10, color=colors[scheduler])
+                linewidth=2, markersize=15, mew=2, color=colors[scheduler])
 
 if not args.nolegend:
     ax.legend(alpha_handles + sched_handles, alpha_labels + sched_labels,
@@ -153,7 +153,7 @@ if not args.nolatex:
     import plot_helpers
     plot_helpers.config_paper(20)
 
-ax.grid()
+ax.yaxis.grid()
 plt.tight_layout(1)
 
 if args.save is not None:
